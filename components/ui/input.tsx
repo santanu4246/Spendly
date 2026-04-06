@@ -20,7 +20,7 @@ export const Input: React.FC<InputProps> = ({
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>{label}</Text>
+      {label ? <Text style={styles.label}>{label}</Text> : null}
       <View 
         style={[
           styles.inputContainer, 
@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
   },
   inputFocused: {
     borderColor: Colors.primary,
-    backgroundColor: '#1E293B', // A subtle tint when focused
+    backgroundColor: '#1E293B',
   },
   inputError: {
     borderColor: Colors.error,

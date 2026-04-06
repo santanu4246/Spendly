@@ -3,12 +3,14 @@ import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Platform } from 'r
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { Colors } from '@/constants/colors';
-import { NotificationIcon, SearchIcon } from '@/components/ui/icons';
+import { AppHeader } from '@/components/layout/AppHeader';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/auth-store';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { SegmentedControl } from '@/components/ui/segmented-control';
+import { FloatingActionButton } from '@/components/layout/FloatingActionButton';
 
 type ProfileTab = 'preview' | 'edit';
 
@@ -24,10 +26,35 @@ export default function ProfileScreen() {
   const [email, setEmail] = useState(user?.email || 'alex@gmail.com');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [updateSuccess, setUpdateSuccess] = useState(false);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  const validate = () => {
+    const newErrors: { [key: string]: string } = {};
+    if (!fullName.trim()) newErrors.fullName = 'Full name is required';
+    if (!email.trim() || !/\S+@\S+\.\S+/.test(email)) newErrors.email = 'Valid email is required';
+    if (password && password !== confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleUpdate = () => {
-    // In a real app, update logic goes here
-    setActiveTab('preview');
+    if (!validate()) return;
+    
+    setIsUpdating(true);
+    setUpdateSuccess(false);
+    
+    setTimeout(() => {
+      setIsUpdating(false);
+      setUpdateSuccess(true);
+      setPassword('');
+      setConfirmPassword('');
+      setTimeout(() => setUpdateSuccess(false), 3000);
+    }, 1500);
   };
 
   const handleLogout = () => {
@@ -38,26 +65,7 @@ export default function ProfileScreen() {
   return (
     <View style={[styles.safeArea, { paddingTop: insets.top + (Platform.OS === 'android' ? 10 : 0) }]}>
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
-      
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.logoContainer}>
-          <Text style={styles.logoText}>S</Text>
-        </View>
-        <Text style={styles.headerTitle}>Spendly</Text>
-        
-        <View style={styles.headerIcons}>
-          <TouchableOpacity style={styles.iconButton}>
-            <SearchIcon size={20} />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton}>
-            <View style={styles.badgeContainer}>
-              <Text style={styles.badgeText}>2</Text>
-            </View>
-            <NotificationIcon size={20} />
-          </TouchableOpacity>
-        </View>
-      </View>
+      <AppHeader />
 
       <KeyboardAwareScrollView 
         style={styles.container}
@@ -66,7 +74,7 @@ export default function ProfileScreen() {
         enableOnAndroid={true}
         extraScrollHeight={Platform.OS === 'ios' ? 20 : 40}
       >
-        {/* Profile Header */}
+        
         <View style={styles.profileHeader}>
           <View style={styles.avatarContainer}>
             <Text style={styles.avatarText}>S</Text>
@@ -74,28 +82,19 @@ export default function ProfileScreen() {
           <Text style={styles.profileName}>{fullName}</Text>
         </View>
 
-        {/* Custom Segmented Control */}
-        <View style={styles.tabContainer}>
-          <TouchableOpacity 
-            style={[styles.tab, activeTab === 'preview' && styles.activeTab]}
-            onPress={() => setActiveTab('preview')}
-          >
-            <Text style={[styles.tabText, activeTab === 'preview' && styles.activeTabText]}>
-              Preview
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.tab, activeTab === 'edit' && styles.activeTab]}
-            onPress={() => setActiveTab('edit')}
-          >
-            <Text style={[styles.tabText, activeTab === 'edit' && styles.activeTabText]}>
-              Edit
-            </Text>
-          </TouchableOpacity>
-        </View>
+        
+        <SegmentedControl
+          options={[
+            { label: 'Preview', value: 'preview' },
+            { label: 'Edit', value: 'edit' }
+          ]}
+          selectedValue={activeTab}
+          onValueChange={setActiveTab}
+          style={styles.segmentedControl}
+        />
 
         {activeTab === 'preview' ? (
-          /* Preview Mode */
+         
           <View style={styles.previewContainer}>
             <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>Total spendings: </Text>
@@ -115,53 +114,63 @@ export default function ProfileScreen() {
             </TouchableOpacity>
           </View>
         ) : (
-          /* Edit Mode */
+          
           <View style={styles.editContainer}>
+            {updateSuccess && (
+              <View style={styles.successBanner}>
+                <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+                <Text style={styles.successText}>Profile updated successfully</Text>
+              </View>
+            )}
+
             <Input
               label="Full Name"
               placeholder="Enter your full name"
               value={fullName}
-              onChangeText={setFullName}
+              onChangeText={(text) => { setFullName(text); setErrors({ ...errors, fullName: '' }); }}
               autoCapitalize="words"
+              error={errors.fullName}
             />
             <Input
               label="Email"
               placeholder="Enter your email"
               value={email}
-              onChangeText={setEmail}
+              onChangeText={(text) => { setEmail(text); setErrors({ ...errors, email: '' }); }}
               keyboardType="email-address"
               autoCapitalize="none"
+              error={errors.email}
             />
             <Input
-              label="Password"
-              placeholder="Create a password"
+              label="New Password"
+              placeholder="Leave blank to keep current"
               value={password}
-              onChangeText={setPassword}
+              onChangeText={(text) => { setPassword(text); setErrors({ ...errors, password: '' }); }}
               isPassword
+              error={errors.password}
             />
             <Input
-              label="Confirm Password"
-              placeholder="Confirm your password"
+              label="Confirm New Password"
+              placeholder="Confirm your new password"
               value={confirmPassword}
-              onChangeText={setConfirmPassword}
+              onChangeText={(text) => { setConfirmPassword(text); setErrors({ ...errors, confirmPassword: '' }); }}
               isPassword
+              error={errors.confirmPassword}
             />
             <Button
               title="Update Details"
               onPress={handleUpdate}
               style={styles.updateButton}
+              loading={isUpdating}
             />
           </View>
         )}
         
-        {/* Extra padding for FAB */}
+       
         <View style={{ height: 100 }} />
       </KeyboardAwareScrollView>
 
-      {/* Floating Action Button */}
-      <TouchableOpacity style={styles.fab}>
-        <Ionicons name="add" size={30} color={Colors.background} />
-      </TouchableOpacity>
+      
+      <FloatingActionButton />
     </View>
   );
 }
@@ -170,57 +179,6 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: Colors.background,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingBottom: 15,
-  },
-  logoContainer: {
-    width: 32,
-    height: 32,
-    backgroundColor: Colors.text,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  logoText: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: Colors.background,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: Colors.text,
-    flex: 1,
-  },
-  headerIcons: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  iconButton: {
-    marginLeft: 16,
-    position: 'relative',
-  },
-  badgeContainer: {
-    position: 'absolute',
-    top: -6,
-    right: -6,
-    backgroundColor: '#E74C3C',
-    borderRadius: 10,
-    width: 16,
-    height: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1,
-  },
-  badgeText: {
-    color: '#FAFAFA',
-    fontSize: 10,
-    fontWeight: 'bold',
   },
   container: {
     flex: 1,
@@ -253,29 +211,8 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: Colors.text,
   },
-  tabContainer: {
-    flexDirection: 'row',
-    backgroundColor: '#1E1E1E',
-    borderRadius: 24,
-    padding: 4,
+  segmentedControl: {
     marginBottom: 30,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 20,
-    alignItems: 'center',
-  },
-  activeTab: {
-    backgroundColor: Colors.text,
-  },
-  tabText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: Colors.textSecondary,
-  },
-  activeTabText: {
-    color: Colors.background,
   },
   previewContainer: {
     marginTop: 10,
@@ -310,20 +247,20 @@ const styles = StyleSheet.create({
   updateButton: {
     marginTop: 16,
   },
-  fab: {
-    position: 'absolute',
-    bottom: 20,
-    right: 20,
-    width: 60,
-    height: 60,
-    backgroundColor: Colors.text,
-    borderRadius: 30,
-    justifyContent: 'center',
+  successBanner: {
+    flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.2)',
+  },
+  successText: {
+    color: '#10B981',
+    marginLeft: 8,
+    fontWeight: '500',
+    fontSize: 14,
   }
 });

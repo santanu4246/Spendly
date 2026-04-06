@@ -21,7 +21,6 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   
-  // Form states
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -160,7 +159,7 @@ const styles = StyleSheet.create({
   logoContainer: {
     width: 64,
     height: 64,
-    backgroundColor: Colors.text, // White background for the logo
+    backgroundColor: Colors.text,
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
@@ -174,7 +173,7 @@ const styles = StyleSheet.create({
   logoText: {
     fontSize: 32,
     fontWeight: '800',
-    color: Colors.background, // Black V text
+    color: Colors.background,
   },
   title: {
     fontSize: 28,

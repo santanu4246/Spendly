@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, StatusBar, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, StatusBar, Platform, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/colors';
-import { NotificationIcon, SearchIcon, AtmIcon } from '@/components/ui/icons';
+import { AtmIcon } from '@/components/ui/icons';
+import { AppHeader } from '@/components/layout/AppHeader';
 import { useAuthStore } from '@/store/auth-store';
 import { Ionicons } from '@expo/vector-icons';
+import { FloatingActionButton } from '@/components/layout/FloatingActionButton';
+import { SegmentedControl } from '@/components/ui/segmented-control';
 
 type ExpensePeriod = 'weekly' | 'monthly';
 
@@ -20,24 +23,7 @@ export default function HomeScreen() {
   return (
     <View style={[styles.safeArea, { paddingTop: insets.top + (Platform.OS === 'android' ? 10 : 0) }]}>
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
-      <View style={styles.header}>
-        <View style={styles.logoContainer}>
-          <Text style={styles.logoText}>S</Text>
-        </View>
-        <Text style={styles.headerTitle}>Spendly</Text>
-        
-        <View style={styles.headerIcons}>
-          <TouchableOpacity style={styles.iconButton}>
-            <SearchIcon size={20} />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton}>
-            <View style={styles.badgeContainer}>
-              <Text style={styles.badgeText}>2</Text>
-            </View>
-            <NotificationIcon size={20} />
-          </TouchableOpacity>
-        </View>
-      </View>
+      <AppHeader />
 
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.greetingContainer}>
@@ -71,34 +57,43 @@ export default function HomeScreen() {
           </View>
         </LinearGradient>
 
+        {/* Summary Cards */}
+        <View style={styles.summaryContainer}>
+          <View style={styles.summaryCard}>
+            <View style={[styles.summaryIcon, { backgroundColor: 'rgba(16, 185, 129, 0.1)' }]}>
+              <Ionicons name="arrow-down" size={16} color="#10B981" />
+            </View>
+            <View>
+              <Text style={styles.summaryLabel}>Income</Text>
+              <Text style={styles.summaryValue}>$5,000</Text>
+            </View>
+          </View>
+          <View style={styles.summaryCard}>
+            <View style={[styles.summaryIcon, { backgroundColor: 'rgba(231, 76, 60, 0.1)' }]}>
+              <Ionicons name="arrow-up" size={16} color="#E74C3C" />
+            </View>
+            <View>
+              <Text style={styles.summaryLabel}>Expenses</Text>
+              <Text style={styles.summaryValue}>$2,400</Text>
+            </View>
+          </View>
+        </View>
+
         <Text style={styles.sectionTitle}>Your expenses</Text>
 
         {/* Period Toggle */}
-        <View style={styles.toggleContainer}>
-          <TouchableOpacity
-            style={[styles.toggleSegment, period === 'weekly' && styles.toggleSegmentActive]}
-            onPress={() => setPeriod('weekly')}
-            accessibilityRole="tab"
-            accessibilityState={{ selected: period === 'weekly' }}
-          >
-            <Text style={[styles.toggleLabel, period === 'weekly' && styles.toggleLabelActive]}>
-              Weekly
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.toggleSegment, period === 'monthly' && styles.toggleSegmentActive]}
-            onPress={() => setPeriod('monthly')}
-            accessibilityRole="tab"
-            accessibilityState={{ selected: period === 'monthly' }}
-          >
-            <Text style={[styles.toggleLabel, period === 'monthly' && styles.toggleLabelActive]}>
-              Monthly
-            </Text>
-          </TouchableOpacity>
-        </View>
+        <SegmentedControl
+          options={[
+            { label: 'Weekly', value: 'weekly' },
+            { label: 'Monthly', value: 'monthly' }
+          ]}
+          selectedValue={period}
+          onValueChange={setPeriod}
+          style={styles.segmentedControl}
+        />
 
         {/* Expenses List */}
-        <View style={styles.expenseItem}>
+        <TouchableOpacity style={styles.expenseItem} activeOpacity={0.7}>
           <View style={styles.expenseLeft}>
             <AtmIcon size={24} color="#FAFAFA" />
             <View style={styles.expenseDetails}>
@@ -116,9 +111,9 @@ export default function HomeScreen() {
               </Text>
             </View>
           </View>
-        </View>
+        </TouchableOpacity>
 
-        <View style={styles.expenseItem}>
+        <TouchableOpacity style={styles.expenseItem} activeOpacity={0.7}>
           <View style={styles.expenseLeft}>
             <AtmIcon size={24} color="#FAFAFA" />
             <View style={styles.expenseDetails}>
@@ -136,16 +131,14 @@ export default function HomeScreen() {
               </Text>
             </View>
           </View>
-        </View>
+        </TouchableOpacity>
         
         {/* Extra padding for FAB */}
         <View style={{ height: 100 }} />
       </ScrollView>
 
       {/* Floating Action Button */}
-      <TouchableOpacity style={styles.fab}>
-        <Ionicons name="add" size={30} color={Colors.background} />
-      </TouchableOpacity>
+      <FloatingActionButton />
     </View>
   );
 }
@@ -154,57 +147,6 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: Colors.background,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingBottom: 15,
-  },
-  logoContainer: {
-    width: 32,
-    height: 32,
-    backgroundColor: Colors.text,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  logoText: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: Colors.background,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: Colors.text,
-    flex: 1,
-  },
-  headerIcons: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  iconButton: {
-    marginLeft: 16,
-    position: 'relative',
-  },
-  badgeContainer: {
-    position: 'absolute',
-    top: -6,
-    right: -6,
-    backgroundColor: '#E74C3C',
-    borderRadius: 10,
-    width: 16,
-    height: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1,
-  },
-  badgeText: {
-    color: '#FAFAFA',
-    fontSize: 10,
-    fontWeight: 'bold',
   },
   container: {
     paddingHorizontal: 20,
@@ -260,36 +202,45 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#FAFAFA',
   },
+  summaryContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 30,
+    gap: 12,
+  },
+  summaryCard: {
+    flex: 1,
+    backgroundColor: '#1E1E1E',
+    borderRadius: 16,
+    padding: 16,
+    flexDirection: 'column',
+    gap: 12,
+  },
+  summaryIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  summaryLabel: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    marginBottom: 4,
+  },
+  summaryValue: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: Colors.text,
+  },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
     color: Colors.text,
     marginBottom: 16,
   },
-  toggleContainer: {
-    flexDirection: 'row',
-    backgroundColor: '#1E1E1E',
-    borderRadius: 24,
-    padding: 4,
+  segmentedControl: {
     marginBottom: 20,
-  },
-  toggleSegment: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: 20,
-    alignItems: 'center',
-  },
-  toggleSegmentActive: {
-    backgroundColor: Colors.text,
-  },
-  toggleLabel: {
-    color: Colors.textSecondary,
-    fontWeight: '500',
-    fontSize: 14,
-  },
-  toggleLabelActive: {
-    color: Colors.background,
-    fontWeight: '600',
   },
   expenseItem: {
     flexDirection: 'row',
@@ -333,20 +284,4 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 14,
   },
-  fab: {
-    position: 'absolute',
-    bottom: 20,
-    right: 20,
-    width: 60,
-    height: 60,
-    backgroundColor: Colors.text,
-    borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
-  }
 });
