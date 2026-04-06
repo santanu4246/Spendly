@@ -9,12 +9,23 @@ import { Button } from '@/components/ui/button';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useCategoryStore, Category } from '@/store/category-store';
 
-const PREDEFINED_CATEGORIES: Category[] = [
-  { id: '1', name: 'Food & Dining', icon: 'fast-food-outline', color: '#10B981', isCustom: false },
-  { id: '2', name: 'Transportation', icon: 'car-outline', color: '#3B82F6', isCustom: false },
-  { id: '3', name: 'Shopping', icon: 'cart-outline', color: '#8B5CF6', isCustom: false },
-  { id: '4', name: 'Entertainment', icon: 'film-outline', color: '#EAB308', isCustom: false },
-  { id: '5', name: 'Housing', icon: 'home-outline', color: '#EF4444', isCustom: false },
+const PREDEFINED_EXPENSE_CATEGORIES: Category[] = [
+  { id: 'exp1', name: 'Food & Dining', icon: 'fast-food-outline', color: '#10B981', isCustom: false, type: 'expense' },
+  { id: 'exp2', name: 'Transportation', icon: 'car-outline', color: '#3B82F6', isCustom: false, type: 'expense' },
+  { id: 'exp3', name: 'Shopping', icon: 'cart-outline', color: '#8B5CF6', isCustom: false, type: 'expense' },
+  { id: 'exp4', name: 'Entertainment', icon: 'film-outline', color: '#EAB308', isCustom: false, type: 'expense' },
+  { id: 'exp5', name: 'Housing', icon: 'home-outline', color: '#EF4444', isCustom: false, type: 'expense' },
+  { id: 'exp6', name: 'Healthcare', icon: 'medkit-outline', color: '#F97316', isCustom: false, type: 'expense' },
+  { id: 'exp7', name: 'Education', icon: 'school-outline', color: '#EC4899', isCustom: false, type: 'expense' },
+];
+
+const PREDEFINED_INCOME_CATEGORIES: Category[] = [
+  { id: 'inc1', name: 'Salary', icon: 'cash-outline', color: '#10B981', isCustom: false, type: 'income' },
+  { id: 'inc2', name: 'Freelance', icon: 'laptop-outline', color: '#3B82F6', isCustom: false, type: 'income' },
+  { id: 'inc3', name: 'Investment', icon: 'trending-up-outline', color: '#8B5CF6', isCustom: false, type: 'income' },
+  { id: 'inc4', name: 'Business', icon: 'briefcase-outline', color: '#EAB308', isCustom: false, type: 'income' },
+  { id: 'inc5', name: 'Gift', icon: 'gift-outline', color: '#EC4899', isCustom: false, type: 'income' },
+  { id: 'inc6', name: 'Bonus', icon: 'star-outline', color: '#F97316', isCustom: false, type: 'income' },
 ];
 
 const COLORS = ['#10B981', '#3B82F6', '#8B5CF6', '#EAB308', '#EF4444', '#F97316', '#EC4899', '#06B6D4'];
@@ -26,9 +37,13 @@ const ICONS: (keyof typeof Ionicons.glyphMap)[] = [
 export default function CategoryManagerScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { setSelectedCategory } = useCategoryStore();
+  const { setSelectedCategory, transactionType } = useCategoryStore();
 
-  const [categories, setCategories] = useState<Category[]>(PREDEFINED_CATEGORIES);
+  const predefinedCategories = transactionType === 'income' 
+    ? PREDEFINED_INCOME_CATEGORIES 
+    : PREDEFINED_EXPENSE_CATEGORIES;
+
+  const [customCategories, setCustomCategories] = useState<Category[]>([]);
   const [view, setView] = useState<'list' | 'create'>('list');
   
   
@@ -45,9 +60,10 @@ export default function CategoryManagerScreen() {
       icon: selectedIcon,
       color: selectedColor,
       isCustom: true,
+      type: transactionType,
     };
     
-    setCategories([...categories, newCategory]);
+    setCustomCategories([...customCategories, newCategory]);
     setView('list');
     setNewName('');
     setSelectedColor(COLORS[0]);
@@ -55,8 +71,13 @@ export default function CategoryManagerScreen() {
   };
 
   const handleDeleteCategory = (id: string) => {
-    setCategories(categories.filter(c => c.id !== id));
+    setCustomCategories(customCategories.filter(c => c.id !== id));
   };
+
+  const allCategories = [
+    ...predefinedCategories, 
+    ...customCategories.filter(c => c.type === transactionType)
+  ];
 
   const handleSelectCategory = (category: Category) => {
     setSelectedCategory(category);
@@ -84,8 +105,13 @@ export default function CategoryManagerScreen() {
 
       {view === 'list' ? (
         <View style={styles.container}>
+          <View style={styles.typeIndicator}>
+            <Text style={styles.typeIndicatorText}>
+              {transactionType === 'income' ? 'Income Categories' : 'Expense Categories'}
+            </Text>
+          </View>
           <ScrollView contentContainerStyle={styles.listContent}>
-            {categories.map((cat) => (
+            {allCategories.map((cat) => (
               <View key={cat.id} style={styles.categoryRow}>
                 <TouchableOpacity 
                   style={styles.categoryTouchable} 
@@ -203,6 +229,18 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: Colors.text,
+  },
+  typeIndicator: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    backgroundColor: '#1A1A1A',
+  },
+  typeIndicatorText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   container: {
     flex: 1,

@@ -10,21 +10,32 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useCategoryStore } from '@/store/category-store';
+import { useAuthStore } from '@/store/auth-store';
+import { useTransactionsStore } from '@/store/transactions-store';
 
 type TransactionType = 'expense' | 'income';
 
 export default function AddTransactionScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { user } = useAuthStore();
+  const { addTransaction } = useTransactionsStore();
 
   const [type, setType] = useState<TransactionType>('expense');
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
-  const { selectedCategory, setSelectedCategory } = useCategoryStore();
+  const { selectedCategory, setSelectedCategory, setTransactionType } = useCategoryStore();
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [loading, setLoading] = useState(false);
   
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  const handleTypeChange = (newType: TransactionType) => {
+    setType(newType);
+    setTransactionType(newType);
+    setSelectedCategory(null); // Clear category when switching types
+  };
 
   const formatDate = (d: Date) => {
     return d.toLocaleDateString('en-US', { 
@@ -46,23 +57,60 @@ export default function AddTransactionScreen() {
 
   const validate = () => {
     const newErrors: { [key: string]: string } = {};
+    
     if (!amount.trim()) {
       newErrors.amount = 'Amount is required';
-    } else if (isNaN(Number(amount))) {
-      newErrors.amount = 'Amount must be a number';
+    } else {
+      const parsedAmount = parseFloat(amount);
+      if (isNaN(parsedAmount)) {
+        newErrors.amount = 'Amount must be a number';
+      } else if (parsedAmount <= 0) {
+        newErrors.amount = 'Amount must be greater than 0';
+      }
     }
+    
     if (!selectedCategory) {
       newErrors.category = 'Category is required';
     }
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!validate()) return;
-  
-    setSelectedCategory(null);
-    router.back();
+    
+    if (!user) {
+      setErrors({ ...errors, general: 'User not authenticated' });
+      return;
+    }
+    
+    setLoading(true);
+    
+    try {
+      const parsedAmount = parseFloat(amount);
+      
+      await addTransaction(user.id, {
+        type,
+        amount: parsedAmount,
+        date: date.toISOString(),
+        note: note.trim() || undefined,
+        category: {
+          id: selectedCategory!.id,
+          name: selectedCategory!.name,
+          icon: selectedCategory!.icon,
+          color: selectedCategory!.color,
+        },
+      });
+      
+      setSelectedCategory(null);
+      router.back();
+    } catch (error) {
+      console.error('Failed to save transaction:', error);
+      setErrors({ ...errors, general: 'Failed to save transaction' });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const isFormValid = amount.trim() !== '' && selectedCategory !== null;
@@ -91,9 +139,15 @@ export default function AddTransactionScreen() {
             { label: 'Income', value: 'income' }
           ]}
           selectedValue={type}
-          onValueChange={setType}
+          onValueChange={handleTypeChange}
           style={styles.segmentedControl}
         />
+
+        {errors.general && (
+          <View style={styles.errorBanner}>
+            <Text style={styles.errorBannerText}>{errors.general}</Text>
+          </View>
+        )}
 
         <View style={styles.form}>
          
@@ -180,7 +234,8 @@ export default function AddTransactionScreen() {
         <Button
           title="Save Transaction"
           onPress={handleSave}
-          disabled={!isFormValid}
+          disabled={!isFormValid || loading}
+          loading={loading}
         />
       </View>
 
@@ -251,6 +306,20 @@ const styles = StyleSheet.create({
   segmentedControl: {
     marginBottom: 32,
   },
+  errorBanner: {
+    backgroundColor: 'rgba(231, 76, 60, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(231, 76, 60, 0.3)',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 20,
+  },
+  errorBannerText: {
+    color: '#E74C3C',
+    fontSize: 14,
+    textAlign: 'center',
+    fontWeight: '500',
+  },
   form: {
     gap: 20,
   },
@@ -274,6 +343,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 0,
     borderWidth: 0,
     backgroundColor: 'transparent',
+  },
+  amountErrorText: {
+    color: Colors.error,
+    fontSize: 14,
+    marginTop: 8,
   },
   inputGroup: {
     marginBottom: 8,

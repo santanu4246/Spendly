@@ -9,16 +9,41 @@ import { useAuthStore } from '@/store/auth-store';
 import { Ionicons } from '@expo/vector-icons';
 import { FloatingActionButton } from '@/components/layout/FloatingActionButton';
 import { SegmentedControl } from '@/components/ui/segmented-control';
+import { 
+  useTransactionsStore, 
+  getCalendarMonthRange,
+  getWeekRange,
+  sumIncomeForRange, 
+  sumExpensesForRange,
+  getRemainingBalance,
+  getTransactionsForRange
+} from '@/store/transactions-store';
+import { EmptyState } from '@/components/ui/empty-state';
 
 type ExpensePeriod = 'weekly' | 'monthly';
 
+function formatCurrency(value: number): string {
+  const abs = Math.abs(value);
+  const formatted = abs.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  return value < 0 ? `-$${formatted}` : `$${formatted}`;
+}
+
 export default function HomeScreen() {
   const { user } = useAuthStore();
-  const userName = user?.name?.split(' ')[0] || 'Alex'; // Fallback to Alex
+  const userName = user?.name?.split(' ')[0] || 'Alex';
   const insets = useSafeAreaInsets();
   const [period, setPeriod] = useState<ExpensePeriod>('weekly');
+  const { transactions, isHydrated } = useTransactionsStore();
 
   const comparisonLabel = period === 'weekly' ? 'last week' : 'last month';
+
+  const currentMonthRange = getCalendarMonthRange();
+  const totalIncome = sumIncomeForRange(transactions, currentMonthRange);
+  const totalExpenses = sumExpensesForRange(transactions, currentMonthRange);
+  const remainingBalance = getRemainingBalance(transactions, currentMonthRange);
+
+  const currentPeriodRange = period === 'weekly' ? getWeekRange() : getCalendarMonthRange();
+  const recentTransactions = getTransactionsForRange(transactions, currentPeriodRange);
 
   return (
     <View style={[styles.safeArea, { paddingTop: insets.top + (Platform.OS === 'android' ? 10 : 0) }]}>
@@ -31,7 +56,7 @@ export default function HomeScreen() {
           <Text style={styles.subGreetingText}>Add your yesterday&apos;s expense</Text>
         </View>
 
-        {/* Expense Card */}
+        
         <LinearGradient
           colors={['#F6D2B3', '#3FB9A2']}
           start={{ x: 0, y: 0 }}
@@ -57,15 +82,40 @@ export default function HomeScreen() {
           </View>
         </LinearGradient>
 
-        {/* Summary Cards */}
+        
+        <Text style={styles.summarySectionTitle}>Monthly summary</Text>
+        <LinearGradient
+          colors={['rgba(63, 185, 162, 0.35)', 'rgba(246, 210, 179, 0.12)']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.remainingCard}
+        >
+          <View style={styles.remainingCardInner}>
+            <View style={[styles.summaryIcon, { backgroundColor: 'rgba(255, 255, 255, 0.12)' }]}>
+              <Ionicons name="wallet-outline" size={18} color="#FAFAFA" />
+            </View>
+            <View style={styles.remainingTextBlock}>
+              <Text style={styles.remainingLabel}>Remaining balance</Text>
+              <Text
+                style={[
+                  styles.remainingValue,
+                  remainingBalance < 0 && styles.remainingValueNegative,
+                ]}
+              >
+                {formatCurrency(remainingBalance)}
+              </Text>
+            </View>
+          </View>
+        </LinearGradient>
+
         <View style={styles.summaryContainer}>
           <View style={styles.summaryCard}>
             <View style={[styles.summaryIcon, { backgroundColor: 'rgba(16, 185, 129, 0.1)' }]}>
               <Ionicons name="arrow-down" size={16} color="#10B981" />
             </View>
             <View>
-              <Text style={styles.summaryLabel}>Income</Text>
-              <Text style={styles.summaryValue}>$5,000</Text>
+              <Text style={styles.summaryLabel}>Total income</Text>
+              <Text style={styles.summaryValue}>{formatCurrency(totalIncome)}</Text>
             </View>
           </View>
           <View style={styles.summaryCard}>
@@ -73,15 +123,15 @@ export default function HomeScreen() {
               <Ionicons name="arrow-up" size={16} color="#E74C3C" />
             </View>
             <View>
-              <Text style={styles.summaryLabel}>Expenses</Text>
-              <Text style={styles.summaryValue}>$2,400</Text>
+              <Text style={styles.summaryLabel}>Total expenses</Text>
+              <Text style={styles.summaryValue}>{formatCurrency(totalExpenses)}</Text>
             </View>
           </View>
         </View>
 
-        <Text style={styles.sectionTitle}>Your expenses</Text>
+        <Text style={styles.sectionTitle}>Recent transactions</Text>
 
-        {/* Period Toggle */}
+        
         <SegmentedControl
           options={[
             { label: 'Weekly', value: 'weekly' },
@@ -92,52 +142,60 @@ export default function HomeScreen() {
           style={styles.segmentedControl}
         />
 
-        {/* Expenses List */}
-        <TouchableOpacity style={styles.expenseItem} activeOpacity={0.7}>
-          <View style={styles.expenseLeft}>
-            <AtmIcon size={24} color="#FAFAFA" />
-            <View style={styles.expenseDetails}>
-              <Text style={styles.expenseName}>FOOD</Text>
-              <Text style={styles.expenseSubtext}>
-                Lesser than {comparisonLabel}
-              </Text>
-            </View>
-          </View>
-          <View style={styles.expenseRight}>
-            <Ionicons name="star-outline" size={16} color={Colors.textSecondary} />
-            <View style={styles.amountBadge}>
-              <Text style={styles.amountText}>
-                {period === 'weekly' ? '$1000' : '$4200'}
-              </Text>
-            </View>
-          </View>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.expenseItem} activeOpacity={0.7}>
-          <View style={styles.expenseLeft}>
-            <AtmIcon size={24} color="#FAFAFA" />
-            <View style={styles.expenseDetails}>
-              <Text style={styles.expenseName}>TRAVEL</Text>
-              <Text style={styles.expenseSubtext}>
-                More than {comparisonLabel}
-              </Text>
-            </View>
-          </View>
-          <View style={styles.expenseRight}>
-            <Ionicons name="star-outline" size={16} color={Colors.textSecondary} />
-            <View style={styles.amountBadge}>
-              <Text style={styles.amountText}>
-                {period === 'weekly' ? '$4000' : '$16800'}
-              </Text>
-            </View>
-          </View>
-        </TouchableOpacity>
         
-        {/* Extra padding for FAB */}
+        {recentTransactions.length === 0 ? (
+          <EmptyState
+            icon="receipt-outline"
+            title="No transactions yet"
+            description={`Add your first ${period === 'weekly' ? 'weekly' : 'monthly'} transaction to start tracking.`}
+          />
+        ) : (
+          recentTransactions.map((transaction) => (
+            <TouchableOpacity key={transaction.id} style={styles.transactionItem} activeOpacity={0.7}>
+              <View style={styles.transactionLeft}>
+                <View style={[styles.categoryIconContainer, { backgroundColor: `${transaction.category.color}20` }]}>
+                  <Ionicons 
+                    name={transaction.category.icon as any} 
+                    size={20} 
+                    color={transaction.category.color} 
+                  />
+                </View>
+                <View style={styles.transactionDetails}>
+                  <Text style={styles.transactionName}>{transaction.category.name}</Text>
+                  <Text style={styles.transactionSubtext}>
+                    {new Date(transaction.date).toLocaleDateString('en-US', { 
+                      month: 'short', 
+                      day: 'numeric',
+                      year: new Date(transaction.date).getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined
+                    })}
+                    {transaction.note ? ` • ${transaction.note}` : ''}
+                  </Text>
+                </View>
+              </View>
+              <View style={[
+                styles.amountBadge,
+                transaction.type === 'income' 
+                  ? styles.amountBadgeIncome 
+                  : styles.amountBadgeExpense
+              ]}>
+                <Text style={[
+                  styles.amountText,
+                  transaction.type === 'income' 
+                    ? styles.amountTextIncome 
+                    : styles.amountTextExpense
+                ]}>
+                  {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          ))
+        )}
+        
+       
         <View style={{ height: 100 }} />
       </ScrollView>
 
-      {/* Floating Action Button */}
+      
       <FloatingActionButton />
     </View>
   );
@@ -202,6 +260,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#FAFAFA',
   },
+  summarySectionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.textSecondary,
+    marginBottom: 12,
+    letterSpacing: 0.3,
+    textTransform: 'uppercase',
+  },
   summaryContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -233,6 +299,34 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: Colors.text,
   },
+  remainingCard: {
+    borderRadius: 16,
+    marginBottom: 12,
+    overflow: 'hidden',
+  },
+  remainingCardInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    gap: 14,
+  },
+  remainingTextBlock: {
+    flex: 1,
+  },
+  remainingLabel: {
+    fontSize: 12,
+    color: 'rgba(250, 250, 250, 0.85)',
+    marginBottom: 4,
+  },
+  remainingValue: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#FAFAFA',
+    letterSpacing: 0.3,
+  },
+  remainingValueNegative: {
+    color: '#FECACA',
+  },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
@@ -242,7 +336,7 @@ const styles = StyleSheet.create({
   segmentedControl: {
     marginBottom: 20,
   },
-  expenseItem: {
+  transactionItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -251,37 +345,51 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 12,
   },
-  expenseLeft: {
+  transactionLeft: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
   },
-  expenseDetails: {
+  categoryIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  transactionDetails: {
     marginLeft: 12,
+    flex: 1,
   },
-  expenseName: {
+  transactionName: {
     fontSize: 16,
     fontWeight: '600',
     color: Colors.text,
     marginBottom: 4,
   },
-  expenseSubtext: {
+  transactionSubtext: {
     fontSize: 12,
     color: Colors.textSecondary,
   },
-  expenseRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
   amountBadge: {
-    backgroundColor: '#2A2A2A',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
-    marginLeft: 12,
+  },
+  amountBadgeIncome: {
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+  },
+  amountBadgeExpense: {
+    backgroundColor: 'rgba(231, 76, 60, 0.1)',
   },
   amountText: {
-    color: Colors.text,
     fontWeight: '600',
     fontSize: 14,
+  },
+  amountTextIncome: {
+    color: '#10B981',
+  },
+  amountTextExpense: {
+    color: '#E74C3C',
   },
 });

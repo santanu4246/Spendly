@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import * as SecureStore from 'expo-secure-store';
 import { AccountsStore } from './accounts-store';
+import { useTransactionsStore } from './transactions-store';
 
 const AUTH_SESSION_KEY = 'spendly-auth-session';
 
@@ -175,6 +176,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   
   logout: async () => {
     await clearSession();
+    useTransactionsStore.getState().clear();
     set({ user: null, isAuthenticated: false, loginError: null, signupError: null });
   },
   
