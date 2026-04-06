@@ -57,8 +57,8 @@ export default function ProfileScreen() {
     }, 1500);
   };
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     router.replace('/(auth)/login');
   };
 

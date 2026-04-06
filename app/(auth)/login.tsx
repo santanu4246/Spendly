@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -14,7 +14,7 @@ import { AuthToggle } from '@/components/auth/auth-toggle';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/auth-store';
-import { useRouter } from 'expo-router';
+import { useRouter, Link } from 'expo-router';
 
 export default function LoginScreen() {
   const [isLogin, setIsLogin] = useState(true);
@@ -26,26 +26,107 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   
-  const { login, signup } = useAuthStore();
+  const [errors, setErrors] = useState({
+    fullName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+  });
+  
+  const { login, signup, loginError, signupError, clearErrors } = useAuthStore();
   const insets = useSafeAreaInsets();
 
+  useEffect(() => {
+    clearErrors();
+    setErrors({ fullName: '', email: '', password: '', confirmPassword: '' });
+  }, [isLogin]);
+
+  // Clear field errors on input change
+  const handleFieldChange = (field: string, value: string) => {
+    setErrors(prev => ({ ...prev, [field]: '' }));
+    clearErrors();
+    
+    switch (field) {
+      case 'fullName':
+        setFullName(value);
+        break;
+      case 'email':
+        setEmail(value);
+        break;
+      case 'password':
+        setPassword(value);
+        break;
+      case 'confirmPassword':
+        setConfirmPassword(value);
+        break;
+    }
+  };
+
+  const validateFields = (): boolean => {
+    const newErrors = {
+      fullName: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+    };
+    
+    let isValid = true;
+    
+    if (!isLogin) {
+      if (!fullName.trim()) {
+        newErrors.fullName = 'Full name is required';
+        isValid = false;
+      }
+    }
+    
+    if (!email.trim()) {
+      newErrors.email = 'Email is required';
+      isValid = false;
+    }
+    
+    if (!password) {
+      newErrors.password = 'Password is required';
+      isValid = false;
+    }
+    
+    if (!isLogin) {
+      if (!confirmPassword) {
+        newErrors.confirmPassword = 'Please confirm your password';
+        isValid = false;
+      } else if (password !== confirmPassword) {
+        newErrors.confirmPassword = 'Passwords do not match';
+        isValid = false;
+      }
+    }
+    
+    setErrors(newErrors);
+    return isValid;
+  };
+
   const handleAuth = async () => {
+    if (!validateFields()) return;
+    
     try {
       setLoading(true);
+      let success = false;
+      
       if (isLogin) {
-        if (!email || !password) return;
-        await login(email);
+        success = await login(email, password);
       } else {
-        if (!fullName || !email || !password || password !== confirmPassword) return;
-        await signup(fullName, email);
+        success = await signup(fullName, email, password);
       }
-      router.replace('/(tabs)');
+      
+      if (success) {
+        router.replace('/(tabs)');
+      }
     } catch (error) {
       console.error(error);
     } finally {
       setLoading(false);
     }
   };
+
+  const currentError = isLogin ? loginError : signupError;
 
   return (
     <View style={[styles.safeArea, { 
@@ -57,7 +138,7 @@ export default function LoginScreen() {
         style={styles.container} 
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
+        keyboardShouldPersistTaps="always"
         enableOnAndroid={true}
         extraScrollHeight={Platform.OS === 'ios' ? 20 : 40}
       >
@@ -80,14 +161,21 @@ export default function LoginScreen() {
             
             <AuthToggle isLogin={isLogin} setIsLogin={setIsLogin} />
 
+            {currentError && (
+              <View style={styles.errorBanner}>
+                <Text style={styles.errorBannerText}>{currentError}</Text>
+              </View>
+            )}
+
             <View style={styles.formContainer}>
               {!isLogin && (
                 <Input
                   label="Full Name"
                   placeholder="Enter your full name"
                   value={fullName}
-                  onChangeText={setFullName}
+                  onChangeText={(value) => handleFieldChange('fullName', value)}
                   autoCapitalize="words"
+                  error={errors.fullName}
                 />
               )}
               
@@ -95,18 +183,20 @@ export default function LoginScreen() {
                 label="Email"
                 placeholder="Enter your email"
                 value={email}
-                onChangeText={setEmail}
+                onChangeText={(value) => handleFieldChange('email', value)}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoComplete="email"
+                error={errors.email}
               />
               
               <Input
                 label="Password"
                 placeholder={isLogin ? "Enter your password" : "Create a password"}
                 value={password}
-                onChangeText={setPassword}
+                onChangeText={(value) => handleFieldChange('password', value)}
                 isPassword
+                error={errors.password}
               />
 
               {!isLogin && (
@@ -114,15 +204,22 @@ export default function LoginScreen() {
                   label="Confirm Password"
                   placeholder="Confirm your password"
                   value={confirmPassword}
-                  onChangeText={setConfirmPassword}
+                  onChangeText={(value) => handleFieldChange('confirmPassword', value)}
                   isPassword
+                  error={errors.confirmPassword}
                 />
               )}
 
               {isLogin && (
-                <TouchableOpacity style={styles.forgotPassword}>
-                  <Text style={styles.forgotPasswordText}>Forgot password?</Text>
-                </TouchableOpacity>
+                <Link href="./forgot-password" asChild>
+                  <TouchableOpacity
+                    style={styles.forgotPassword}
+                    accessibilityRole="link"
+                    accessibilityLabel="Forgot password"
+                  >
+                    <Text style={styles.forgotPasswordText}>Forgot password?</Text>
+                  </TouchableOpacity>
+                </Link>
               )}
 
               <Button
@@ -212,6 +309,20 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.textSecondary,
     marginBottom: 28,
+  },
+  errorBanner: {
+    backgroundColor: 'rgba(231, 76, 60, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(231, 76, 60, 0.3)',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 20,
+  },
+  errorBannerText: {
+    color: '#E74C3C',
+    fontSize: 14,
+    textAlign: 'center',
+    fontWeight: '500',
   },
   formContainer: {
     marginTop: 8,
