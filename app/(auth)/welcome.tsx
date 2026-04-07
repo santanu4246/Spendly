@@ -42,10 +42,11 @@ export default function WelcomeScreen() {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
-      
-      {/* Background Gradient for Fintech vibe (Dark Green/Teal to Black) */}
       <LinearGradient
-        colors={['#10B98120', '#0A0A0A', '#0A0A0A']}
+        colors={['#0B3B24', '#0A0A0A', '#0A0A0A']}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+        locations={[0, 0.5, 1]}
         style={StyleSheet.absoluteFill}
       />
 
@@ -157,7 +158,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   slide: {
-    width: width - 48, // Match screen width minus padding
+    width: width - 48,
   },
   subtitle: {
     color: Colors.primaryLight,
