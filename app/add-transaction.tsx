@@ -130,7 +130,13 @@ export default function AddTransactionScreen() {
     <View
       style={[
         styles.safeArea,
-        { paddingTop: Platform.OS === "android" ? insets.top : 20 },
+        { 
+          paddingTop: Platform.OS === "android" ? insets.top : 20,
+          marginTop: Platform.OS === "ios" ? 44 : 0,
+          borderTopLeftRadius: Platform.OS === "ios" ? 24 : 0,
+          borderTopRightRadius: Platform.OS === "ios" ? 24 : 0,
+          overflow: "hidden"
+        },
       ]}
     >
       <View style={styles.header}>

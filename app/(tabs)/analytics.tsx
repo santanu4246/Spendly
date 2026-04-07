@@ -1,5 +1,4 @@
 import { AppHeader } from "@/components/layout/AppHeader";
-import { FloatingActionButton } from "@/components/layout/FloatingActionButton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Colors } from "@/constants/colors";
@@ -326,8 +325,6 @@ export default function BalancesScreen() {
 
         <View style={{ height: 100 }} />
       </ScrollView>
-
-      <FloatingActionButton />
     </View>
   );
 }

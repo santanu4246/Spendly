@@ -43,11 +43,10 @@ export default function WelcomeScreen() {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
       <LinearGradient
-        colors={['#0B3B24', '#0A0A0A', '#0A0A0A']}
+        colors={[Colors.primary, Colors.background]}
         start={{ x: 0.5, y: 0 }}
-        end={{ x: 0.5, y: 1 }}
-        locations={[0, 0.5, 1]}
-        style={StyleSheet.absoluteFill}
+        end={{ x: 0.5, y: 0.8 }}
+        style={[StyleSheet.absoluteFill, { opacity: 0.2 }]}
       />
 
       {/* Top Logo Area */}

@@ -7,7 +7,6 @@ import { AtmIcon } from '@/components/ui/icons';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { useAuthStore } from '@/store/auth-store';
 import { Ionicons } from '@expo/vector-icons';
-import { FloatingActionButton } from '@/components/layout/FloatingActionButton';
 import { SegmentedControl } from '@/components/ui/segmented-control';
 import { 
   useTransactionsStore, 
@@ -194,9 +193,6 @@ export default function HomeScreen() {
        
         <View style={{ height: 100 }} />
       </ScrollView>
-
-      
-      <FloatingActionButton />
     </View>
   );
 }

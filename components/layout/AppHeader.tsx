@@ -1,22 +1,23 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { NotificationIcon, SearchIcon } from '@/components/ui/icons';
+import { NotificationIcon } from '@/components/ui/icons';
 import { Colors } from '@/constants/colors';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 
-const SEARCH_ICON_SIZE = 28;
 const NOTIFICATION_ICON_SIZE = 20;
 
 type AppHeaderProps = {
   notificationCount?: number;
-  onSearchPress?: () => void;
   onNotificationPress?: () => void;
 };
 
 export function AppHeader({
   notificationCount = 2,
-  onSearchPress,
   onNotificationPress,
 }: AppHeaderProps) {
+  const router = useRouter();
+
   return (
     <View style={styles.root}>
       <View style={styles.logoContainer}>
@@ -27,11 +28,11 @@ export function AppHeader({
       <View style={styles.actions}>
         <TouchableOpacity
           style={styles.iconButton}
-          onPress={onSearchPress}
+          onPress={() => router.push('/add-transaction')}
           accessibilityRole="button"
-          accessibilityLabel="Search"
+          accessibilityLabel="Add Transaction"
         >
-          <SearchIcon size={SEARCH_ICON_SIZE} />
+          <Ionicons name="add-circle" size={28} color={Colors.primary} />
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.iconButton}
@@ -87,6 +88,8 @@ const styles = StyleSheet.create({
   iconButton: {
     marginLeft: 16,
     position: 'relative',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   badge: {
     position: 'absolute',

@@ -6,7 +6,6 @@ import { AppHeader } from '@/components/layout/AppHeader';
 import { useAuthStore } from '@/store/auth-store';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { FloatingActionButton } from '@/components/layout/FloatingActionButton';
 import { LogoutIcon } from '@/components/ui/icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -127,8 +126,6 @@ export default function ProfileScreen() {
         
         <View style={{ height: 100 }} />
       </ScrollView>
-
-      <FloatingActionButton />
     </View>
   );
 }
