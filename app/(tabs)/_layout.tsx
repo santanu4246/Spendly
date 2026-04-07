@@ -16,7 +16,7 @@ export default function TabLayout() {
   // Auth guard — redirect to login whenever unauthenticated
   useEffect(() => {
     if (isHydrated && !isAuthenticated) {
-      router.replace("/(auth)/login");
+      router.replace("/(auth)/welcome");
     }
   }, [isAuthenticated, isHydrated]);
 

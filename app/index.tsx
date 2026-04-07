@@ -19,7 +19,7 @@ export default function Index() {
     );
   }
 
-  return <Redirect href={isAuthenticated ? '/(tabs)' : '/(auth)/login'} />;
+  return <Redirect href={isAuthenticated ? '/(tabs)' : '/(auth)/welcome'} />;
 }
 
 const styles = StyleSheet.create({

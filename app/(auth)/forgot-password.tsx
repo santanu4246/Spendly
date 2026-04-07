@@ -26,15 +26,12 @@ export default function ForgotPasswordScreen() {
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   
-
   const [email, setEmail] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
   
-
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   
-
   const [errors, setErrors] = useState({
     email: '',
     currentPassword: '',
@@ -77,7 +74,6 @@ export default function ForgotPasswordScreen() {
     setBannerError('');
     
     try {
-      // Verify credentials
       const result = await AccountsStore.validateCredentials(email, currentPassword);
       
       if (!result.success) {
@@ -86,7 +82,6 @@ export default function ForgotPasswordScreen() {
         return;
       }
       
-      // Move to reset step
       setStep('reset');
     } catch (error) {
       setBannerError('Something went wrong. Please try again.');
@@ -122,7 +117,6 @@ export default function ForgotPasswordScreen() {
     setBannerError('');
     
     try {
-      // Update password
       const result = await AccountsStore.updatePassword(email, currentPassword, newPassword);
       
       if (!result.success) {
@@ -131,7 +125,6 @@ export default function ForgotPasswordScreen() {
         return;
       }
       
-      // Show success and redirect
       setShowSuccess(true);
       setTimeout(() => {
         router.replace('/(auth)/login');
@@ -149,6 +142,18 @@ export default function ForgotPasswordScreen() {
       paddingBottom: insets.bottom 
     }]}>
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
+      
+      {/* Top Header Row with Back Button */}
+      <View style={styles.topHeader}>
+        <TouchableOpacity 
+          style={styles.backButton}
+          onPress={() => router.back()}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <Ionicons name="arrow-back" size={24} color={Colors.text} />
+        </TouchableOpacity>
+      </View>
+
       <KeyboardAwareScrollView 
         style={styles.container} 
         contentContainerStyle={styles.scrollContent}
@@ -157,14 +162,13 @@ export default function ForgotPasswordScreen() {
         enableOnAndroid={true}
         extraScrollHeight={Platform.OS === 'ios' ? 20 : 40}
       >
-        {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity 
-            style={styles.backButton}
-            onPress={() => router.back()}
-          >
-            <Ionicons name="arrow-back" size={24} color={Colors.text} />
-          </TouchableOpacity>
+          <View style={styles.logoRow}>
+            <View style={styles.logoIcon}>
+              <Text style={styles.logoIconText}>S</Text>
+            </View>
+            <Text style={styles.logoText}>Spendly</Text>
+          </View>
           <Text style={styles.title}>Reset Password</Text>
           <Text style={styles.subtitle}>
             {step === 'verify' 
@@ -173,107 +177,94 @@ export default function ForgotPasswordScreen() {
           </Text>
         </View>
 
-        <View style={styles.card}>
-          {/* Success Banner */}
-          {showSuccess && (
-            <View style={styles.successBanner}>
-              <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-              <Text style={styles.successText}>Password updated successfully!</Text>
-            </View>
-          )}
-
-          {/* Error Banner */}
-          {bannerError && (
-            <View style={styles.errorBanner}>
-              <Text style={styles.errorBannerText}>{bannerError}</Text>
-            </View>
-          )}
-
-          {/* Step Indicator */}
-          <View style={styles.stepIndicator}>
-            <View style={[styles.stepDot, step === 'verify' && styles.stepDotActive]} />
-            <View style={styles.stepLine} />
-            <View style={[styles.stepDot, step === 'reset' && styles.stepDotActive]} />
+        {showSuccess && (
+          <View style={styles.successBanner}>
+            <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+            <Text style={styles.successText}>Password updated successfully!</Text>
           </View>
-          <Text style={styles.stepLabel}>
-            Step {step === 'verify' ? '1' : '2'} of 2
-          </Text>
+        )}
 
-          <View style={styles.formContainer}>
-            {step === 'verify' ? (
-              <>
-                <Text style={styles.formTitle}>Verify Your Identity</Text>
-                <Text style={styles.formDescription}>
-                  Enter your email and current password to continue
-                </Text>
-                
-                <Input
-                  label="Email"
-                  placeholder="Enter your email"
-                  value={email}
-                  onChangeText={(text) => { setEmail(text); clearFieldError('email'); }}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  error={errors.email}
-                />
-                
-                <Input
-                  label="Current Password"
-                  placeholder="Enter your current password"
-                  value={currentPassword}
-                  onChangeText={(text) => { setCurrentPassword(text); clearFieldError('currentPassword'); }}
-                  isPassword
-                  error={errors.currentPassword}
-                />
-
-                <Button
-                  title="Verify & Continue"
-                  onPress={handleVerify}
-                  loading={loading}
-                  style={styles.actionButton}
-                />
-              </>
-            ) : (
-              <>
-                <Text style={styles.formTitle}>Set New Password</Text>
-                <Text style={styles.formDescription}>
-                  Choose a strong password for your account
-                </Text>
-                
-                <Input
-                  label="New Password"
-                  placeholder="Enter new password"
-                  value={newPassword}
-                  onChangeText={(text) => { setNewPassword(text); clearFieldError('newPassword'); }}
-                  isPassword
-                  error={errors.newPassword}
-                />
-                
-                <Input
-                  label="Confirm New Password"
-                  placeholder="Confirm your new password"
-                  value={confirmPassword}
-                  onChangeText={(text) => { setConfirmPassword(text); clearFieldError('confirmPassword'); }}
-                  isPassword
-                  error={errors.confirmPassword}
-                />
-
-                <Button
-                  title="Reset Password"
-                  onPress={handleReset}
-                  loading={loading}
-                  style={styles.actionButton}
-                />
-                
-                <TouchableOpacity 
-                  style={styles.backToVerifyButton}
-                  onPress={() => setStep('verify')}
-                >
-                  <Text style={styles.backToVerifyText}>Back to verification</Text>
-                </TouchableOpacity>
-              </>
-            )}
+        {bannerError && (
+          <View style={styles.errorBanner}>
+            <Text style={styles.errorBannerText}>{bannerError}</Text>
           </View>
+        )}
+
+        {/* Step Indicator */}
+        <View style={styles.stepIndicator}>
+          <View style={[styles.stepDot, step === 'verify' && styles.stepDotActive]} />
+          <View style={styles.stepLine} />
+          <View style={[styles.stepDot, step === 'reset' && styles.stepDotActive]} />
+        </View>
+        <Text style={styles.stepLabel}>
+          Step {step === 'verify' ? '1' : '2'} of 2
+        </Text>
+
+        <View style={styles.formContainer}>
+          {step === 'verify' ? (
+            <>
+              <Input
+                label="Email"
+                placeholder="example@mail.com"
+                value={email}
+                onChangeText={(text) => { setEmail(text); clearFieldError('email'); }}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                error={errors.email}
+              />
+              
+              <Input
+                label="Current Password"
+                placeholder="Enter your current password"
+                value={currentPassword}
+                onChangeText={(text) => { setCurrentPassword(text); clearFieldError('currentPassword'); }}
+                isPassword
+                error={errors.currentPassword}
+              />
+
+              <Button
+                title="Verify & Continue"
+                onPress={handleVerify}
+                loading={loading}
+                style={styles.actionButton}
+              />
+            </>
+          ) : (
+            <>
+              <Input
+                label="New Password"
+                placeholder="Enter new password"
+                value={newPassword}
+                onChangeText={(text) => { setNewPassword(text); clearFieldError('newPassword'); }}
+                isPassword
+                error={errors.newPassword}
+              />
+              
+              <Input
+                label="Confirm New Password"
+                placeholder="Confirm your new password"
+                value={confirmPassword}
+                onChangeText={(text) => { setConfirmPassword(text); clearFieldError('confirmPassword'); }}
+                isPassword
+                error={errors.confirmPassword}
+              />
+
+              <Button
+                title="Reset Password"
+                onPress={handleReset}
+                loading={loading}
+                style={styles.actionButton}
+              />
+              
+              <TouchableOpacity 
+                style={styles.backToVerifyButton}
+                onPress={() => setStep('verify')}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.backToVerifyText}>Back to verification</Text>
+              </TouchableOpacity>
+            </>
+          )}
         </View>
       </KeyboardAwareScrollView>
     </View>
@@ -285,56 +276,77 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
+  topHeader: {
+    paddingHorizontal: 24,
+    paddingTop: 12,
+    paddingBottom: 4,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+  },
   container: {
     flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: 20,
-    justifyContent: 'center',
-    paddingVertical: 40,
+    paddingHorizontal: 24,
+    paddingVertical: 16,
   },
   header: {
+    alignItems: 'center',
     marginBottom: 32,
+    marginTop: 0,
   },
-  backButton: {
-    marginBottom: 24,
-    padding: 4,
-    marginLeft: -4,
+  logoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
   },
-  title: {
-    fontSize: 28,
+  logoIcon: {
+    width: 32,
+    height: 32,
+    backgroundColor: Colors.primary,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
+  },
+  logoIconText: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#000',
+  },
+  logoText: {
+    fontSize: 24,
     fontWeight: '700',
     color: Colors.text,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#E0E0E0',
     marginBottom: 8,
     letterSpacing: 0.5,
   },
   subtitle: {
     fontSize: 15,
     color: Colors.textSecondary,
+    textAlign: 'center',
     lineHeight: 22,
-  },
-  card: {
-    backgroundColor: Colors.card,
-    borderRadius: 28,
-    padding: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.03)',
   },
   successBanner: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: 'rgba(16, 185, 129, 0.1)',
     borderWidth: 1,
     borderColor: 'rgba(16, 185, 129, 0.3)',
     borderRadius: 12,
     padding: 12,
-    marginBottom: 20,
+    marginBottom: 24,
   },
   successText: {
     color: '#10B981',
@@ -348,7 +360,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(231, 76, 60, 0.3)',
     borderRadius: 12,
     padding: 12,
-    marginBottom: 20,
+    marginBottom: 24,
   },
   errorBannerText: {
     color: '#E74C3C',
@@ -360,16 +372,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
   },
   stepDot: {
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#2A2A2A',
+    backgroundColor: Colors.card,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   stepDotActive: {
-    backgroundColor: Colors.text,
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
     width: 12,
     height: 12,
     borderRadius: 6,
@@ -377,40 +392,32 @@ const styles = StyleSheet.create({
   stepLine: {
     width: 40,
     height: 2,
-    backgroundColor: '#2A2A2A',
+    backgroundColor: Colors.border,
     marginHorizontal: 8,
   },
   stepLabel: {
-    fontSize: 12,
+    fontSize: 13,
     color: Colors.textSecondary,
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: 32,
+    fontWeight: '500',
   },
   formContainer: {
-    marginTop: 8,
-  },
-  formTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: Colors.text,
-    marginBottom: 6,
-  },
-  formDescription: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    marginBottom: 24,
+    marginTop: 0,
   },
   actionButton: {
-    marginTop: 8,
+    marginTop: 16,
+    borderRadius: 28,
   },
   backToVerifyButton: {
-    marginTop: 16,
+    marginTop: 24,
     alignItems: 'center',
     padding: 8,
   },
   backToVerifyText: {
     fontSize: 14,
-    color: Colors.textSecondary,
-    fontWeight: '500',
+    color: Colors.text,
+    fontWeight: '600',
+    textDecorationLine: 'underline',
   },
 });

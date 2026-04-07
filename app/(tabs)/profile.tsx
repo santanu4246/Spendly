@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Platform, Alert, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Platform, Alert, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/colors';
 import { AppHeader } from '@/components/layout/AppHeader';
@@ -29,7 +29,7 @@ export default function ProfileScreen() {
           style: "destructive",
           onPress: async () => {
             await logout();
-            router.replace('/(auth)/login');
+            router.replace('/(auth)/welcome');
           }
         }
       ]
@@ -76,7 +76,6 @@ export default function ProfileScreen() {
           </View>
           <View style={styles.profileInfo}>
             <Text style={styles.profileName}>{userName}</Text>
-            <Text style={styles.profileEmail}>{user?.email}</Text>
           </View>
           <TouchableOpacity style={styles.editButton} activeOpacity={0.7} onPress={() => router.push('/edit-profile')}>
             <Text style={styles.editButtonText}>Edit</Text>
@@ -175,11 +174,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: Colors.text,
-    marginBottom: 4,
-  },
-  profileEmail: {
-    fontSize: 14,
-    color: Colors.textSecondary,
   },
   editButton: {
     flexDirection: 'row',
