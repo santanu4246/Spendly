@@ -2,16 +2,25 @@ import { BalancesIcon, HomeIcon, ProfileIcon } from "@/components/ui/icons";
 import { Colors } from "@/constants/colors";
 import { useAuthStore } from "@/store/auth-store";
 import { useTransactionsStore } from "@/store/transactions-store";
-import { Tabs } from "expo-router";
+import { Tabs, useRouter } from "expo-router";
 import React, { useEffect } from "react";
 import { Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
-  const { user } = useAuthStore();
+  const router = useRouter();
+  const { user, isAuthenticated, isHydrated } = useAuthStore();
   const { hydrate, clear } = useTransactionsStore();
 
+  // Auth guard — redirect to login whenever unauthenticated
+  useEffect(() => {
+    if (isHydrated && !isAuthenticated) {
+      router.replace("/(auth)/login");
+    }
+  }, [isAuthenticated, isHydrated]);
+
+  // Hydrate or clear transactions based on auth state
   useEffect(() => {
     if (user?.id) {
       hydrate(user.id);
@@ -24,6 +33,7 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
+        sceneStyle: { backgroundColor: Colors.background },
         tabBarStyle: {
           backgroundColor: Colors.background,
           borderTopWidth: 0,

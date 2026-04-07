@@ -1,23 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Redirect } from 'expo-router';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { Colors } from '@/constants/colors';
 import { useAuthStore } from '@/store/auth-store';
 
 export default function Index() {
-  const [isLoading, setIsLoading] = useState(true);
   const { isAuthenticated, isHydrated, hydrate } = useAuthStore();
 
   useEffect(() => {
-    const loadSession = async () => {
-      await hydrate();
-      setIsLoading(false);
-    };
-    
-    loadSession();
+    hydrate();
   }, []);
 
-  if (isLoading || !isHydrated) {
+  if (!isHydrated) {
     return (
       <View style={styles.container}>
         <ActivityIndicator size="large" color={Colors.text} />

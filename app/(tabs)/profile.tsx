@@ -1,175 +1,134 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Platform } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Platform, Alert, ScrollView, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { Colors } from '@/constants/colors';
 import { AppHeader } from '@/components/layout/AppHeader';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/auth-store';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { SegmentedControl } from '@/components/ui/segmented-control';
 import { FloatingActionButton } from '@/components/layout/FloatingActionButton';
-
-type ProfileTab = 'preview' | 'edit';
+import { LogoutIcon } from '@/components/ui/icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const { user, logout } = useAuthStore();
   const router = useRouter();
   
-  const [activeTab, setActiveTab] = useState<ProfileTab>('preview');
-  
-  // Form states for edit mode
-  const [fullName, setFullName] = useState(user?.name || 'Alex yu');
-  const [email, setEmail] = useState(user?.email || 'alex@gmail.com');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [updateSuccess, setUpdateSuccess] = useState(false);
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const userName = user?.name || 'User';
+  const userInitial = userName.charAt(0).toUpperCase();
 
-  const validate = () => {
-    const newErrors: { [key: string]: string } = {};
-    if (!fullName.trim()) newErrors.fullName = 'Full name is required';
-    if (!email.trim() || !/\S+@\S+\.\S+/.test(email)) newErrors.email = 'Valid email is required';
-    if (password && password !== confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
-    }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  const handleLogout = () => {
+    Alert.alert(
+      "Log Out",
+      "Are you sure you want to log out?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { 
+          text: "Log Out", 
+          style: "destructive",
+          onPress: async () => {
+            await logout();
+            router.replace('/(auth)/login');
+          }
+        }
+      ]
+    );
   };
 
-  const handleUpdate = () => {
-    if (!validate()) return;
-    
-    setIsUpdating(true);
-    setUpdateSuccess(false);
-    
-    setTimeout(() => {
-      setIsUpdating(false);
-      setUpdateSuccess(true);
-      setPassword('');
-      setConfirmPassword('');
-      setTimeout(() => setUpdateSuccess(false), 3000);
-    }, 1500);
-  };
+  const renderSectionHeader = (title: string) => (
+    <Text style={styles.sectionHeader}>{title}</Text>
+  );
 
-  const handleLogout = async () => {
-    await logout();
-    router.replace('/(auth)/login');
-  };
+  const renderMenuItem = (
+    title: string, 
+    icon: keyof typeof Ionicons.glyphMap, 
+    isLast: boolean = false, 
+    onPress?: () => void
+  ) => (
+    <TouchableOpacity 
+      style={[styles.menuItem, !isLast && styles.menuItemBorder]} 
+      onPress={onPress}
+      activeOpacity={0.7}
+    >
+      <View style={styles.menuItemLeft}>
+        <Ionicons name={icon} size={20} color={Colors.text} style={styles.menuIcon} />
+        <Text style={styles.menuItemTitle}>{title}</Text>
+      </View>
+      <Ionicons name="chevron-forward" size={20} color={Colors.textSecondary} />
+    </TouchableOpacity>
+  );
 
   return (
     <View style={[styles.safeArea, { paddingTop: insets.top + (Platform.OS === 'android' ? 10 : 0) }]}>
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
       <AppHeader />
 
-      <KeyboardAwareScrollView 
+      <ScrollView 
         style={styles.container}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
-        enableOnAndroid={true}
-        extraScrollHeight={Platform.OS === 'ios' ? 20 : 40}
       >
-        
-        <View style={styles.profileHeader}>
+        {/* Profile Card */}
+        <View style={styles.profileCard}>
           <View style={styles.avatarContainer}>
-            <Text style={styles.avatarText}>S</Text>
+            <Text style={styles.avatarText}>{userInitial}</Text>
           </View>
-          <Text style={styles.profileName}>{fullName}</Text>
+          <View style={styles.profileInfo}>
+            <Text style={styles.profileName}>{userName}</Text>
+            <Text style={styles.profileEmail}>{user?.email}</Text>
+          </View>
+          <TouchableOpacity style={styles.editButton} activeOpacity={0.7} onPress={() => router.push('/edit-profile')}>
+            <Text style={styles.editButtonText}>Edit</Text>
+            <Ionicons name="chevron-forward" size={14} color={Colors.text} />
+          </TouchableOpacity>
         </View>
 
-        
-        <SegmentedControl
-          options={[
-            { label: 'Preview', value: 'preview' },
-            { label: 'Edit', value: 'edit' }
-          ]}
-          selectedValue={activeTab}
-          onValueChange={setActiveTab}
-          style={styles.segmentedControl}
-        />
-
-        {activeTab === 'preview' ? (
-         
-          <View style={styles.previewContainer}>
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Total spendings: </Text>
-              <Text style={styles.infoValue}>$2000</Text>
-            </View>
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Email : </Text>
-              <Text style={styles.infoValue}>{email}</Text>
-            </View>
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Balance : </Text>
-              <Text style={styles.infoValue}>$20000</Text>
-            </View>
-            
-            <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-              <Text style={styles.logoutText}>Log Out</Text>
-            </TouchableOpacity>
+        {/* Premium Banner */}
+        <LinearGradient
+          colors={['#8B4367', '#5E3A5A']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.premiumBanner}
+        >
+          <View style={styles.premiumIconContainer}>
+            <Text style={styles.premiumIconText}>S</Text>
           </View>
-        ) : (
-          
-          <View style={styles.editContainer}>
-            {updateSuccess && (
-              <View style={styles.successBanner}>
-                <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-                <Text style={styles.successText}>Profile updated successfully</Text>
-              </View>
-            )}
-
-            <Input
-              label="Full Name"
-              placeholder="Enter your full name"
-              value={fullName}
-              onChangeText={(text) => { setFullName(text); setErrors({ ...errors, fullName: '' }); }}
-              autoCapitalize="words"
-              error={errors.fullName}
-            />
-            <Input
-              label="Email"
-              placeholder="Enter your email"
-              value={email}
-              onChangeText={(text) => { setEmail(text); setErrors({ ...errors, email: '' }); }}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              error={errors.email}
-            />
-            <Input
-              label="New Password"
-              placeholder="Leave blank to keep current"
-              value={password}
-              onChangeText={(text) => { setPassword(text); setErrors({ ...errors, password: '' }); }}
-              isPassword
-              error={errors.password}
-            />
-            <Input
-              label="Confirm New Password"
-              placeholder="Confirm your new password"
-              value={confirmPassword}
-              onChangeText={(text) => { setConfirmPassword(text); setErrors({ ...errors, confirmPassword: '' }); }}
-              isPassword
-              error={errors.confirmPassword}
-            />
-            <Button
-              title="Update Details"
-              onPress={handleUpdate}
-              style={styles.updateButton}
-              loading={isUpdating}
-            />
+          <View style={styles.premiumInfo}>
+            <Text style={styles.premiumTitle}>Spendly Premium</Text>
+            <Text style={styles.premiumSubtitle}>You have full access to Spendly Premium features.</Text>
           </View>
-        )}
+        </LinearGradient>
+
+        {/* Preferences Section */}
+        {renderSectionHeader('PREFERENCES')}
+        <View style={styles.sectionContainer}>
+          {renderMenuItem('Gentle Reminders', 'leaf-outline', true)}
+        </View>
+
+        {/* Subscriptions & Billing Section */}
+        {renderSectionHeader('SUBSCRIPTIONS & BILLING')}
+        <View style={styles.sectionContainer}>
+          {renderMenuItem('Subscription', 'card-outline')}
+          {renderMenuItem('Billing & Refund Policy', 'receipt-outline', true)}
+        </View>
+
+        {/* Data & Privacy Section */}
+        {renderSectionHeader('DATA & PRIVACY')}
+        <View style={styles.sectionContainer}>
+          {renderMenuItem('Terms of Service', 'document-text-outline')}
+          {renderMenuItem('Privacy Policy', 'shield-checkmark-outline', true)}
+        </View>
+
+        {/* Logout Button */}
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout} activeOpacity={0.8}>
+          <Text style={styles.logoutText}>Log Out</Text>
+          <LogoutIcon color="#FFFFFF" size={24} />
+        </TouchableOpacity>
         
-       
         <View style={{ height: 100 }} />
-      </KeyboardAwareScrollView>
+      </ScrollView>
 
-      
       <FloatingActionButton />
     </View>
   );
@@ -185,18 +144,21 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingTop: 20,
+    paddingTop: 10,
   },
-  profileHeader: {
+  profileCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 30,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    padding: 20,
+    borderRadius: 24,
+    marginBottom: 20,
   },
   avatarContainer: {
-    width: 48,
-    height: 48,
-    backgroundColor: Colors.text,
-    borderRadius: 16,
+    width: 56,
+    height: 56,
+    backgroundColor: '#3FB9A2',
+    borderRadius: 28,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
@@ -206,61 +168,116 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: Colors.background,
   },
+  profileInfo: {
+    flex: 1,
+  },
   profileName: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: Colors.text,
+    marginBottom: 4,
   },
-  segmentedControl: {
-    marginBottom: 30,
-  },
-  previewContainer: {
-    marginTop: 10,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    marginBottom: 24,
-    alignItems: 'center',
-  },
-  infoLabel: {
-    fontSize: 16,
+  profileEmail: {
+    fontSize: 14,
     color: Colors.textSecondary,
   },
-  infoValue: {
-    fontSize: 18,
+  editButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  editButtonText: {
+    color: Colors.text,
+    fontSize: 14,
     fontWeight: '600',
+    marginRight: 4,
+  },
+  premiumBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 20,
+    borderRadius: 24,
+    marginBottom: 32,
+  },
+  premiumIconContainer: {
+    width: 48,
+    height: 48,
+    backgroundColor: '#FAFAFA',
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  premiumIconText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#8B4367',
+  },
+  premiumInfo: {
+    flex: 1,
+  },
+  premiumTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#FAFAFA',
+    marginBottom: 4,
+  },
+  premiumSubtitle: {
+    fontSize: 13,
+    color: 'rgba(250, 250, 250, 0.8)',
+    lineHeight: 18,
+  },
+  sectionHeader: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: Colors.textSecondary,
+    marginBottom: 12,
+    letterSpacing: 0.5,
+  },
+  sectionContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 20,
+    marginBottom: 24,
+    overflow: 'hidden',
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+  },
+  menuItemBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  menuItemLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  menuIcon: {
+    marginRight: 12,
+  },
+  menuItemTitle: {
+    fontSize: 15,
+    fontWeight: '500',
     color: Colors.text,
   },
   logoutButton: {
-    marginTop: 40,
-    paddingVertical: 12,
-    alignItems: 'flex-start',
-  },
-  logoutText: {
-    color: '#E74C3C',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  editContainer: {
-    marginTop: 10,
-  },
-  updateButton: {
-    marginTop: 16,
-  },
-  successBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-    padding: 12,
-    borderRadius: 12,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.2)',
+    justifyContent: 'center',
+    backgroundColor: '#FF6B6B',
+    paddingVertical: 18,
+    borderRadius: 24,
+    marginTop: 8,
   },
-  successText: {
-    color: '#10B981',
-    marginLeft: 8,
-    fontWeight: '500',
-    fontSize: 14,
+  logoutText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginRight: 8,
   }
 });

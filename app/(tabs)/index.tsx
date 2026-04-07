@@ -276,6 +276,7 @@ const styles = StyleSheet.create({
   },
   summaryCard: {
     flex: 1,
+    minWidth: 0,
     backgroundColor: '#1E1E1E',
     borderRadius: 16,
     padding: 16,
@@ -298,6 +299,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: Colors.text,
+    ...Platform.select({
+      android: { includeFontPadding: false },
+    }),
   },
   remainingCard: {
     borderRadius: 16,
@@ -312,6 +316,7 @@ const styles = StyleSheet.create({
   },
   remainingTextBlock: {
     flex: 1,
+    minWidth: 0,
   },
   remainingLabel: {
     fontSize: 12,
@@ -323,6 +328,9 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#FAFAFA',
     letterSpacing: 0.3,
+    ...Platform.select({
+      android: { includeFontPadding: false },
+    }),
   },
   remainingValueNegative: {
     color: '#FECACA',
@@ -360,6 +368,7 @@ const styles = StyleSheet.create({
   transactionDetails: {
     marginLeft: 12,
     flex: 1,
+    minWidth: 0,
   },
   transactionName: {
     fontSize: 16,
@@ -372,6 +381,8 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
   },
   amountBadge: {
+    flexShrink: 0,
+    marginLeft: 8,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
@@ -385,6 +396,10 @@ const styles = StyleSheet.create({
   amountText: {
     fontWeight: '600',
     fontSize: 14,
+    textAlign: 'right',
+    ...Platform.select({
+      android: { includeFontPadding: false },
+    }),
   },
   amountTextIncome: {
     color: '#10B981',

@@ -17,8 +17,10 @@ interface AuthState {
   isHydrated: boolean;
   loginError: string | null;
   signupError: string | null;
+  profileError: string | null;
   login: (email: string, password: string) => Promise<boolean>;
   signup: (name: string, email: string, password: string) => Promise<boolean>;
+  updateProfile: (name: string, email: string) => Promise<boolean>;
   logout: () => Promise<void>;
   clearErrors: () => void;
   hydrate: () => Promise<void>;
@@ -73,6 +75,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isHydrated: false,
   loginError: null,
   signupError: null,
+  profileError: null,
   
   hydrate: async () => {
     const user = await loadSession();
@@ -173,14 +176,49 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     
     return true;
   },
-  
+
+  updateProfile: async (name: string, email: string) => {
+    set({ profileError: null });
+    const current = get().user;
+    if (!current) {
+      set({ profileError: 'Not signed in' });
+      return false;
+    }
+
+    const result = await AccountsStore.updateAccountProfile(current.id, {
+      name,
+      email,
+    });
+
+    if (!result.success || !result.account) {
+      set({ profileError: result.error || 'Could not update profile' });
+      return false;
+    }
+
+    const user: User = {
+      id: result.account.id,
+      name: result.account.name,
+      email: result.account.email,
+    };
+
+    await saveSession(user);
+    set({ user, profileError: null });
+    return true;
+  },
+
   logout: async () => {
     await clearSession();
     useTransactionsStore.getState().clear();
-    set({ user: null, isAuthenticated: false, loginError: null, signupError: null });
+    set({
+      user: null,
+      isAuthenticated: false,
+      loginError: null,
+      signupError: null,
+      profileError: null,
+    });
   },
   
   clearErrors: () => {
-    set({ loginError: null, signupError: null });
+    set({ loginError: null, signupError: null, profileError: null });
   },
 }));
