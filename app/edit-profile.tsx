@@ -57,7 +57,7 @@ export default function EditProfileScreen() {
     <View
       style={[
         styles.safeArea,
-        { paddingTop: Math.max(insets.top, 20), backgroundColor: Colors.background },
+        { backgroundColor: Colors.background, paddingTop: insets.top + (Platform.OS === 'android' ? 10 : 0) },
       ]}
     >
       <StatusBar barStyle={activeTheme === 'dark' ? 'light-content' : 'dark-content'} backgroundColor="transparent" translucent />
@@ -67,7 +67,6 @@ export default function EditProfileScreen() {
           <Ionicons name="chevron-back" size={24} color={Colors.text} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: Colors.text }]}>Edit Profile</Text>
-        <View style={{ width: 24 }} />
       </View>
 
       <ScrollView
@@ -132,8 +131,8 @@ export default function EditProfileScreen() {
             title="Save Changes"
             onPress={handleSave}
             loading={isUpdating}
-            style={[styles.saveButton, { backgroundColor: Colors.primary }] as any}
-            textStyle={[styles.saveButtonText, { color: Colors.background }] as any}
+            style={[styles.saveButton, { backgroundColor: '#34A853', borderWidth: 0 }] as any}
+            textStyle={[styles.saveButtonText, { color: '#FFFFFF' }] as any}
           />
 
           <TouchableOpacity
@@ -157,17 +156,17 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingVertical: 16,
   },
   backButton: {
     padding: 4,
     marginLeft: -4,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
+    marginLeft: 8,
   },
   scroll: {
     flex: 1,

@@ -1,45 +1,51 @@
-import React, { useState, useCallback } from 'react';
+import { useThemeColor } from "@/hooks/useThemeColor";
+import { useThemeStore } from "@/store/theme-store";
+import { useFonts } from "expo-font";
+import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import React, { useCallback, useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  StatusBar,
   Dimensions,
   FlatList,
-  NativeSyntheticEvent,
-  NativeScrollEvent,
-  Platform,
   ListRenderItemInfo,
-} from 'react-native';
-import { useRouter } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
-import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
-import { useFonts } from 'expo-font';
-import * as SplashScreen from 'expo-splash-screen';
-import { useThemeColor } from '@/hooks/useThemeColor';
-import { useThemeStore } from '@/store/theme-store';
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  Platform,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 
 const slides = [
   {
-    id: '1',
-    badgeText: 'Fund control',
-    headline: 'Smart money management made simple',
-    subtext: 'See income, expenses, and balance in one place. Add transactions in seconds.',
+    id: "1",
+    badgeText: "Fund control",
+    headline: "Smart money management made simple",
+    subtext:
+      "See income, expenses, and balance in one place. Add transactions in seconds.",
   },
   {
-    id: '2',
-    badgeText: 'Insights',
-    headline: 'Understand where your money goes',
-    subtext: 'Category breakdown and trends help you stay on budget without spreadsheets.',
+    id: "2",
+    badgeText: "Insights",
+    headline: "Understand where your money goes",
+    subtext:
+      "Category breakdown and trends help you stay on budget without spreadsheets.",
   },
   {
-    id: '3',
-    badgeText: 'Goals',
-    headline: 'Build habits that stick',
-    subtext: 'Track progress, stay consistent, and celebrate wins on your financial journey.',
+    id: "3",
+    badgeText: "Goals",
+    headline: "Build habits that stick",
+    subtext:
+      "Track progress, stay consistent, and celebrate wins on your financial journey.",
   },
 ];
 
@@ -53,7 +59,7 @@ export default function WelcomeScreen() {
   const [activeIndex, setActiveIndex] = useState(0);
 
   const [fontsLoaded] = useFonts({
-    DarkByte: require('../../assets/DarkByte.ttf'),
+    DarkByte: require("../../assets/DarkByte.ttf"),
   });
 
   const onLayoutRootView = useCallback(async () => {
@@ -71,25 +77,44 @@ export default function WelcomeScreen() {
     }
   };
 
-  const isLight = activeTheme === 'light';
+  const isLight = activeTheme === "light";
 
   const gradientColors = isLight
-    ? (['#E0FDD2', '#FFFFFF', '#FFFFFF'] as const)
-    : (['#0B2E1F', '#0A0A0A', '#0A0A0A'] as const);
+    ? (["#E0FDD2", "#FFFFFF", "#FFFFFF"] as const)
+    : (["#0B2E1F", "#0A0A0A", "#0A0A0A"] as const);
   const gradientLocations = [0, 0.4, 1] as const;
 
   const renderItem = ({ item }: ListRenderItemInfo<Slide>) => (
     <View style={styles.slideContainer}>
       <View style={styles.contentContainer}>
-        <View style={[styles.badge, isLight ? styles.badgeLight : styles.badgeDark]}>
-          <Text style={[styles.badgeText, { color: isLight ? '#007725' : Colors.primaryLight }]}>
+        <View
+          style={[styles.badge, isLight ? styles.badgeLight : styles.badgeDark]}
+        >
+          <Text
+            style={[
+              styles.badgeText,
+              { color: isLight ? "#007725" : Colors.primaryLight },
+            ]}
+          >
             {item.badgeText}
           </Text>
         </View>
 
-        <Text style={[styles.headline, { color: isLight ? '#111111' : Colors.text }]}>{item.headline}</Text>
+        <Text
+          style={[
+            styles.headline,
+            { color: isLight ? "#111111" : Colors.text },
+          ]}
+        >
+          {item.headline}
+        </Text>
 
-        <Text style={[styles.subtext, { color: isLight ? '#666666' : Colors.textSecondary }]}>
+        <Text
+          style={[
+            styles.subtext,
+            { color: isLight ? "#666666" : Colors.textSecondary },
+          ]}
+        >
           {item.subtext}
         </Text>
       </View>
@@ -109,10 +134,21 @@ export default function WelcomeScreen() {
       style={styles.gradientRoot}
       onLayout={onLayoutRootView}
     >
-      <StatusBar barStyle={isLight ? 'dark-content' : 'light-content'} backgroundColor="transparent" translucent />
-      <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+      <StatusBar
+        barStyle={isLight ? "dark-content" : "light-content"}
+        backgroundColor="transparent"
+        translucent
+      />
+      <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
         <View style={styles.header}>
-          <Text style={[styles.logoText, { color: isLight ? '#000000' : Colors.text }]}>Spendly</Text>
+          <Text
+            style={[
+              styles.logoText,
+              { color: isLight ? "#000000" : Colors.text },
+            ]}
+          >
+            Spendly
+          </Text>
         </View>
 
         <FlatList
@@ -127,7 +163,12 @@ export default function WelcomeScreen() {
           style={styles.list}
         />
 
-        <View style={[styles.footerContainer, { paddingBottom: Math.max(insets.bottom, 24) }]}>
+        <View
+          style={[
+            styles.footerContainer,
+            { paddingBottom: Math.max(insets.bottom, 24) },
+          ]}
+        >
           <View style={styles.pagination}>
             {slides.map((_, index) => (
               <View
@@ -135,11 +176,13 @@ export default function WelcomeScreen() {
                 style={[
                   styles.dot,
                   {
-                    backgroundColor: isLight ? '#E0E0E0' : 'rgba(255,255,255,0.25)',
+                    backgroundColor: isLight
+                      ? "#E0E0E0"
+                      : "rgba(255,255,255,0.25)",
                   },
                   index === activeIndex && [
                     styles.activeDot,
-                    { backgroundColor: isLight ? '#333333' : Colors.primary },
+                    { backgroundColor: isLight ? "#333333" : Colors.primary },
                   ],
                 ]}
               />
@@ -148,20 +191,54 @@ export default function WelcomeScreen() {
 
           <TouchableOpacity
             activeOpacity={0.85}
-            onPress={() => router.push({ pathname: '/(auth)/login', params: { mode: 'signup' } })}
+            onPress={() =>
+              router.push({
+                pathname: "/(auth)/login",
+                params: { mode: "signup" },
+              })
+            }
           >
-            <View style={[styles.getStartedButton, isLight ? styles.getStartedButtonLight : styles.getStartedButtonDark]}>
+            <View
+              style={[
+                styles.getStartedButton,
+                isLight
+                  ? styles.getStartedButtonLight
+                  : styles.getStartedButtonDark,
+              ]}
+            >
               <View style={styles.innerHighlight} />
-              <Text style={styles.getStartedText}>Get Started</Text>
+              <Text
+                style={[
+                  styles.getStartedText,
+                  { color: isLight ? "#FFFFFF" : "#000000" },
+                ]}
+              >
+                Get Started
+              </Text>
             </View>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.signInButton, isLight ? styles.signInButtonLight : styles.signInButtonDark]}
+            style={[
+              styles.signInButton,
+              isLight ? styles.signInButtonLight : styles.signInButtonDark,
+            ]}
             activeOpacity={0.85}
-            onPress={() => router.push({ pathname: '/(auth)/login', params: { mode: 'login' } })}
+            onPress={() =>
+              router.push({
+                pathname: "/(auth)/login",
+                params: { mode: "login" },
+              })
+            }
           >
-            <Text style={[styles.signInText, { color: isLight ? '#000000' : Colors.text }]}>Sign In</Text>
+            <Text
+              style={[
+                styles.signInText,
+                { color: isLight ? "#000000" : Colors.text },
+              ]}
+            >
+              Sign In
+            </Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -175,33 +252,33 @@ const styles = StyleSheet.create({
   },
   safeArea: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: "center",
   },
   header: {
     marginTop: 8,
     height: 40,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   logoText: {
-    fontFamily: 'DarkByte',
+    fontFamily: "DarkByte",
     fontSize: 26,
     letterSpacing: 2,
   },
   list: {
     flex: 1,
-    width: '100%',
+    width: "100%",
   },
   slideContainer: {
     width,
     flex: 1,
-    justifyContent: 'flex-end',
+    justifyContent: "flex-end",
     paddingBottom: 24,
   },
   contentContainer: {
-    width: '100%',
+    width: "100%",
     paddingHorizontal: 24,
-    alignItems: 'center',
-    justifyContent: 'flex-end',
+    alignItems: "center",
+    justifyContent: "flex-end",
     paddingBottom: 16,
   },
   badge: {
@@ -211,19 +288,19 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   badgeLight: {
-    backgroundColor: '#E7FFC6',
+    backgroundColor: "#E7FFC6",
   },
   badgeDark: {
-    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+    backgroundColor: "rgba(16, 185, 129, 0.2)",
   },
   badgeText: {
-    fontWeight: '600',
+    fontWeight: "600",
     fontSize: 13,
   },
   headline: {
     fontSize: 24,
-    fontWeight: '800',
-    textAlign: 'center',
+    fontWeight: "800",
+    textAlign: "center",
     marginBottom: 12,
     lineHeight: 30,
     ...Platform.select({
@@ -232,18 +309,18 @@ const styles = StyleSheet.create({
   },
   subtext: {
     fontSize: 15,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 8,
     lineHeight: 22,
     paddingHorizontal: 8,
   },
   footerContainer: {
-    width: '100%',
-    alignItems: 'center',
+    width: "100%",
+    alignItems: "center",
     paddingTop: 8,
   },
   pagination: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: 22,
     gap: 8,
   },
@@ -260,48 +337,47 @@ const styles = StyleSheet.create({
     width: width - 48,
     paddingVertical: 16,
     borderRadius: 100,
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 12,
-    position: 'relative',
-    overflow: 'hidden',
+    position: "relative",
+    overflow: "hidden",
   },
   getStartedButtonLight: {
     borderWidth: 1,
-    borderColor: '#000000',
-    backgroundColor: '#222222',
+    borderColor: "#000000",
+    backgroundColor: "#222222",
   },
   getStartedButtonDark: {
     borderWidth: 1,
-    borderColor: '#10B981',
-    backgroundColor: '#0F766E',
+    borderColor: "#FFFFFF",
+    backgroundColor: "#FFFFFF",
   },
   innerHighlight: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     height: 2,
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    backgroundColor: "rgba(255, 255, 255, 0.25)",
   },
   getStartedText: {
-    color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   signInButton: {
     width: width - 48,
     paddingVertical: 16,
     borderRadius: 100,
-    alignItems: 'center',
+    alignItems: "center",
   },
   signInButtonLight: {
-    backgroundColor: '#F0F0F0',
+    backgroundColor: "#F0F0F0",
   },
   signInButtonDark: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: "rgba(255, 255, 255, 0.08)",
   },
   signInText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });

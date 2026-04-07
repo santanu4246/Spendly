@@ -21,9 +21,6 @@ export function AppHeader({
 
   return (
     <View style={styles.root}>
-      <View style={[styles.logoContainer, { backgroundColor: Colors.text }]}>
-        <Text style={[styles.logoText, { color: Colors.background }]}>S</Text>
-      </View>
       <Text style={[styles.title, { color: Colors.text }]}>Spendly</Text>
 
       <View style={styles.actions}>
@@ -75,9 +72,10 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   title: {
-    fontSize: 20,
-    fontWeight: '600',
+    fontSize: 24,
+    fontWeight: '700',
     flex: 1,
+    letterSpacing: 0.5,
   },
   actions: {
     flexDirection: 'row',

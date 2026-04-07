@@ -18,7 +18,6 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
       bottom: Platform.OS === "ios" ? Math.max(insets.bottom, 12) : 12,
       backgroundColor: Colors.tabBarBg,
       borderColor: Colors.border,
-      shadowColor: Colors.text,
     }]}>
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
@@ -131,10 +130,6 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 36,
     borderWidth: 1,
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.15,
-    shadowRadius: 20,
-    elevation: 10,
     left: 0,
     right: 0,
   },

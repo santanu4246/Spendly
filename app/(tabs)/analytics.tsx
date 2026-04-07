@@ -1,5 +1,5 @@
-import { AppHeader } from "@/components/layout/AppHeader";
 import { EmptyState } from "@/components/ui/empty-state";
+import { NotificationIcon } from "@/components/ui/icons";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { useThemeStore } from "@/store/theme-store";
@@ -7,9 +7,11 @@ import {
     getCalendarMonthRange,
     sumExpensesForRange,
     sumIncomeForRange,
-    useTransactionsStore
+    useTransactionsStore,
 } from "@/store/transactions-store";
+import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
     Platform,
@@ -17,7 +19,8 @@ import {
     StatusBar,
     StyleSheet,
     Text,
-    View
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Circle, G, Path } from "react-native-svg";
@@ -25,6 +28,7 @@ import Svg, { Circle, G, Path } from "react-native-svg";
 type ChartPeriod = "week" | "month";
 
 export default function BalancesScreen() {
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   const Colors = useThemeColor();
   const { activeTheme } = useThemeStore();
@@ -34,7 +38,6 @@ export default function BalancesScreen() {
   const currentMonthRange = getCalendarMonthRange();
   const monthExpenses = sumExpensesForRange(transactions, currentMonthRange);
   const monthIncome = sumIncomeForRange(transactions, currentMonthRange);
-
 
   const getDailySpending = () => {
     const days = period === "week" ? 7 : 14;
@@ -69,7 +72,6 @@ export default function BalancesScreen() {
     return dailyData;
   };
 
-  
   const getCategoryBreakdown = () => {
     const expenseTransactions = transactions.filter(
       (t) => t.type === "expense",
@@ -105,7 +107,7 @@ export default function BalancesScreen() {
             : 0,
       }))
       .sort((a, b) => b.amount - a.amount)
-      .slice(0, 5); 
+      .slice(0, 5);
   };
 
   const dailySpending = getDailySpending();
@@ -113,28 +115,25 @@ export default function BalancesScreen() {
   const maxSpending = Math.max(...dailySpending.map((d) => d.value), 1);
   const hasData = transactions.length > 0;
 
-  
   const generatePieChart = () => {
     if (categoryBreakdown.length === 0) return [];
 
     const total = categoryBreakdown.reduce((sum, cat) => sum + cat.amount, 0);
-    let currentAngle = -90; 
+    let currentAngle = -90;
     const radius = 120;
     const centerX = 130;
     const centerY = 130;
 
     return categoryBreakdown.map((cat) => {
       const percentage = cat.amount / total;
-      
+
       const angle = percentage === 1 ? 359.99 : percentage * 360;
       const startAngle = currentAngle;
       const endAngle = currentAngle + angle;
 
-      
       const startRad = (startAngle * Math.PI) / 180;
       const endRad = (endAngle * Math.PI) / 180;
 
-      
       const x1 = centerX + radius * Math.cos(startRad);
       const y1 = centerY + radius * Math.sin(startRad);
       const x2 = centerX + radius * Math.cos(endRad);
@@ -142,7 +141,6 @@ export default function BalancesScreen() {
 
       const largeArcFlag = angle > 180 ? 1 : 0;
 
-      
       const path = [
         `M ${centerX} ${centerY}`,
         `L ${x1} ${y1}`,
@@ -167,31 +165,54 @@ export default function BalancesScreen() {
     <View
       style={[
         styles.safeArea,
-        { paddingTop: insets.top + (Platform.OS === "android" ? 10 : 0), backgroundColor: Colors.background },
+        {
+          paddingTop: insets.top + (Platform.OS === "android" ? 10 : 0),
+          backgroundColor: Colors.background,
+        },
       ]}
     >
       <StatusBar
-        barStyle={activeTheme === 'dark' ? 'light-content' : 'dark-content'}
+        barStyle={activeTheme === "dark" ? "light-content" : "dark-content"}
         backgroundColor="transparent"
         translucent
       />
-      <AppHeader />
 
       <ScrollView
         contentContainerStyle={styles.container}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.titleContainer}>
-          <Text style={[styles.titleText, { color: Colors.text }]}>Analytics</Text>
-          <Text style={[styles.subtitleText, { color: Colors.textSecondary }]}>Track your spending patterns</Text>
+          <View>
+            <Text style={[styles.titleText, { color: Colors.text }]}>
+              Analytics
+            </Text>
+            <Text
+              style={[styles.subtitleText, { color: Colors.textSecondary }]}
+            >
+              Track your spending patterns
+            </Text>
+          </View>
+          <View style={styles.headerActions}>
+            <TouchableOpacity
+              style={styles.iconButton}
+              accessibilityRole="button"
+              accessibilityLabel="Notifications"
+            >
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>2</Text>
+              </View>
+              <NotificationIcon size={20} color={Colors.text} />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {hasData ? (
           <>
-            
             <View style={styles.chartSection}>
               <View style={styles.chartHeader}>
-                <Text style={[styles.sectionTitle, { color: Colors.text }]}>Daily Spending</Text>
+                <Text style={[styles.sectionTitle, { color: Colors.text }]}>
+                  Daily Spending
+                </Text>
                 <SegmentedControl
                   options={[
                     { label: "7 Days", value: "week" },
@@ -205,23 +226,53 @@ export default function BalancesScreen() {
 
               <View style={styles.chartContainer}>
                 <View style={styles.chartYAxis}>
-                  <Text style={[styles.yAxisLabel, { color: Colors.textSecondary }]}>
+                  <Text
+                    style={[styles.yAxisLabel, { color: Colors.textSecondary }]}
+                  >
                     ${Math.round(maxSpending)}
                   </Text>
-                  <Text style={[styles.yAxisLabel, { color: Colors.textSecondary }]}>
+                  <Text
+                    style={[styles.yAxisLabel, { color: Colors.textSecondary }]}
+                  >
                     ${Math.round(maxSpending * 0.66)}
                   </Text>
-                  <Text style={[styles.yAxisLabel, { color: Colors.textSecondary }]}>
+                  <Text
+                    style={[styles.yAxisLabel, { color: Colors.textSecondary }]}
+                  >
                     ${Math.round(maxSpending * 0.33)}
                   </Text>
-                  <Text style={[styles.yAxisLabel, { color: Colors.textSecondary }]}>$0</Text>
+                  <Text
+                    style={[styles.yAxisLabel, { color: Colors.textSecondary }]}
+                  >
+                    $0
+                  </Text>
                 </View>
                 <View style={styles.chartBars}>
                   <View style={styles.gridLineContainer}>
-                    <View style={[styles.gridLine, { top: "0%", borderColor: Colors.border }]} />
-                    <View style={[styles.gridLine, { top: "33%", borderColor: Colors.border }]} />
-                    <View style={[styles.gridLine, { top: "66%", borderColor: Colors.border }]} />
-                    <View style={[styles.gridLine, { top: "100%", borderColor: Colors.border }]} />
+                    <View
+                      style={[
+                        styles.gridLine,
+                        { top: "0%", borderColor: Colors.border },
+                      ]}
+                    />
+                    <View
+                      style={[
+                        styles.gridLine,
+                        { top: "33%", borderColor: Colors.border },
+                      ]}
+                    />
+                    <View
+                      style={[
+                        styles.gridLine,
+                        { top: "66%", borderColor: Colors.border },
+                      ]}
+                    />
+                    <View
+                      style={[
+                        styles.gridLine,
+                        { top: "100%", borderColor: Colors.border },
+                      ]}
+                    />
                   </View>
 
                   <ScrollView
@@ -254,9 +305,21 @@ export default function BalancesScreen() {
                               />
                             </View>
                           ) : (
-                            <View style={[styles.emptyBar, { backgroundColor: Colors.border }]} />
+                            <View
+                              style={[
+                                styles.emptyBar,
+                                { backgroundColor: Colors.border },
+                              ]}
+                            />
                           )}
-                          <Text style={[styles.xAxisLabel, { color: Colors.textSecondary }]}>{day.label}</Text>
+                          <Text
+                            style={[
+                              styles.xAxisLabel,
+                              { color: Colors.textSecondary },
+                            ]}
+                          >
+                            {day.label}
+                          </Text>
                         </View>
                       );
                     })}
@@ -265,10 +328,11 @@ export default function BalancesScreen() {
               </View>
             </View>
 
-            
             {categoryBreakdown.length > 0 && (
               <View style={styles.categorySection}>
-                <Text style={[styles.sectionTitle, { color: Colors.text }]}>Category Breakdown</Text>
+                <Text style={[styles.sectionTitle, { color: Colors.text }]}>
+                  Category Breakdown
+                </Text>
 
                 <View style={styles.pieChartContainer}>
                   <Svg width="260" height="260" viewBox="0 0 260 260">
@@ -281,7 +345,7 @@ export default function BalancesScreen() {
                           opacity={0.9}
                         />
                       ))}
-                     
+
                       <Circle
                         cx="130"
                         cy="130"
@@ -291,8 +355,20 @@ export default function BalancesScreen() {
                     </G>
                   </Svg>
                   <View style={styles.pieChartCenter}>
-                    <Text style={[styles.pieChartCenterLabel, { color: Colors.textSecondary }]}>TOTAL</Text>
-                    <Text style={[styles.pieChartCenterValue, { color: Colors.text }]}>
+                    <Text
+                      style={[
+                        styles.pieChartCenterLabel,
+                        { color: Colors.textSecondary },
+                      ]}
+                    >
+                      TOTAL
+                    </Text>
+                    <Text
+                      style={[
+                        styles.pieChartCenterValue,
+                        { color: Colors.text },
+                      ]}
+                    >
                       $
                       {categoryBreakdown
                         .reduce((sum, cat) => sum + cat.amount, 0)
@@ -310,7 +386,9 @@ export default function BalancesScreen() {
                           { backgroundColor: cat.color },
                         ]}
                       />
-                      <Text style={[styles.legendName, { color: Colors.text }]}>{cat.name}</Text>
+                      <Text style={[styles.legendName, { color: Colors.text }]}>
+                        {cat.name}
+                      </Text>
                     </View>
                   ))}
                 </View>
@@ -341,7 +419,38 @@ const styles = StyleSheet.create({
     paddingTop: 10,
   },
   titleContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 32,
+  },
+  headerActions: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  iconButton: {
+    marginLeft: 16,
+    position: "relative",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  badge: {
+    position: "absolute",
+    top: -6,
+    right: -6,
+    backgroundColor: "#E74C3C",
+    borderRadius: 10,
+    minWidth: 16,
+    height: 16,
+    paddingHorizontal: 4,
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1,
+  },
+  badgeText: {
+    color: "#FAFAFA",
+    fontSize: 10,
+    fontWeight: "bold",
   },
   titleText: {
     fontSize: 24,

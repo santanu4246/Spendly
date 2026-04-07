@@ -21,6 +21,7 @@ interface TransactionsState {
   isHydrated: boolean;
   hydrate: (userId: string) => Promise<void>;
   addTransaction: (userId: string, transaction: Omit<Transaction, 'id' | 'userId'>) => Promise<void>;
+  deleteTransaction: (transactionId: string) => Promise<void>;
   clear: () => void;
 }
 
@@ -67,6 +68,20 @@ export const useTransactionsStore = create<TransactionsState>((set, get) => ({
     const updatedTransactions = [...currentTransactions, newTransaction];
 
     await saveTransactions(userId, updatedTransactions);
+    set({ transactions: updatedTransactions });
+  },
+
+  deleteTransaction: async (transactionId: string) => {
+    const currentTransactions = get().transactions;
+    const transaction = currentTransactions.find(t => t.id === transactionId);
+    
+    if (!transaction) {
+      return;
+    }
+
+    const updatedTransactions = currentTransactions.filter(t => t.id !== transactionId);
+    
+    await saveTransactions(transaction.userId, updatedTransactions);
     set({ transactions: updatedTransactions });
   },
 
