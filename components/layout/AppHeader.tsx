@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { NotificationIcon } from '@/components/ui/icons';
-import { Colors } from '@/constants/colors';
+import { useThemeColor } from '@/hooks/useThemeColor';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
@@ -17,13 +17,14 @@ export function AppHeader({
   onNotificationPress,
 }: AppHeaderProps) {
   const router = useRouter();
+  const Colors = useThemeColor();
 
   return (
     <View style={styles.root}>
-      <View style={styles.logoContainer}>
-        <Text style={styles.logoText}>S</Text>
+      <View style={[styles.logoContainer, { backgroundColor: Colors.text }]}>
+        <Text style={[styles.logoText, { color: Colors.background }]}>S</Text>
       </View>
-      <Text style={styles.title}>Spendly</Text>
+      <Text style={[styles.title, { color: Colors.text }]}>Spendly</Text>
 
       <View style={styles.actions}>
         <TouchableOpacity
@@ -47,7 +48,7 @@ export function AppHeader({
               </Text>
             </View>
           ) : null}
-          <NotificationIcon size={NOTIFICATION_ICON_SIZE} />
+          <NotificationIcon size={NOTIFICATION_ICON_SIZE} color={Colors.text} />
         </TouchableOpacity>
       </View>
     </View>
@@ -64,7 +65,6 @@ const styles = StyleSheet.create({
   logoContainer: {
     width: 32,
     height: 32,
-    backgroundColor: Colors.text,
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
@@ -73,12 +73,10 @@ const styles = StyleSheet.create({
   logoText: {
     fontSize: 18,
     fontWeight: '800',
-    color: Colors.background,
   },
   title: {
     fontSize: 20,
     fontWeight: '600',
-    color: Colors.text,
     flex: 1,
   },
   actions: {

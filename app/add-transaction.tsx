@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SegmentedControl } from "@/components/ui/segmented-control";
-import { Colors } from "@/constants/colors";
+import { useThemeColor } from "@/hooks/useThemeColor";
+import { useThemeStore } from "@/store/theme-store";
 import { useAuthStore } from "@/store/auth-store";
 import { useCategoryStore } from "@/store/category-store";
 import { useTransactionsStore } from "@/store/transactions-store";
@@ -14,6 +15,7 @@ import React, { useState } from "react";
 import {
     Modal,
     Platform,
+    StatusBar,
     StyleSheet,
     Text,
     TextInput,
@@ -27,6 +29,8 @@ type TransactionType = "expense" | "income";
 
 export default function AddTransactionScreen() {
   const insets = useSafeAreaInsets();
+  const Colors = useThemeColor();
+  const { activeTheme } = useThemeStore();
   const router = useRouter();
   const { user } = useAuthStore();
   const { addTransaction } = useTransactionsStore();
@@ -135,18 +139,20 @@ export default function AddTransactionScreen() {
           marginTop: Platform.OS === "ios" ? 44 : 0,
           borderTopLeftRadius: Platform.OS === "ios" ? 24 : 0,
           borderTopRightRadius: Platform.OS === "ios" ? 24 : 0,
-          overflow: "hidden"
+          overflow: "hidden",
+          backgroundColor: Colors.background
         },
       ]}
     >
-      <View style={styles.header}>
+      <StatusBar barStyle={activeTheme === 'dark' ? 'light-content' : 'dark-content'} backgroundColor="transparent" translucent />
+      <View style={[styles.header, { borderBottomColor: Colors.border }]}>
         <TouchableOpacity
           onPress={() => router.back()}
           style={styles.closeButton}
         >
           <Ionicons name="close" size={28} color={Colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Add Transaction</Text>
+        <Text style={[styles.headerTitle, { color: Colors.text }]}>Add Transaction</Text>
         <View style={{ width: 28 }} />
       </View>
 
@@ -175,7 +181,7 @@ export default function AddTransactionScreen() {
 
         <View style={styles.form}>
           <View style={styles.amountContainer}>
-            <Text style={styles.currencySymbol}>$</Text>
+            <Text style={[styles.currencySymbol, { color: Colors.textSecondary }]}>$</Text>
             <TextInput
               placeholder="0.00"
               placeholderTextColor={Colors.textSecondary}
@@ -185,19 +191,19 @@ export default function AddTransactionScreen() {
                 setErrors({ ...errors, amount: "" });
               }}
               keyboardType="decimal-pad"
-              style={styles.amountInput}
+              style={[styles.amountInput, { color: Colors.text }]}
             />
           </View>
           {errors.amount ? (
-            <Text style={styles.amountErrorText}>{errors.amount}</Text>
+            <Text style={[styles.amountErrorText, { color: Colors.error }]}>{errors.amount}</Text>
           ) : null}
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Category</Text>
+            <Text style={[styles.label, { color: Colors.text }]}>Category</Text>
             <TouchableOpacity
               style={[
                 styles.pickerTrigger,
-                errors.category && styles.pickerTriggerError,
+                { backgroundColor: Colors.inputBg, borderColor: errors.category ? Colors.error : Colors.border },
               ]}
               onPress={() => router.push("/categories")}
             >
@@ -225,7 +231,7 @@ export default function AddTransactionScreen() {
                 <Text
                   style={[
                     styles.pickerText,
-                    !selectedCategory && styles.pickerTextPlaceholder,
+                    { color: selectedCategory ? Colors.text : Colors.textSecondary },
                   ]}
                 >
                   {selectedCategory ? selectedCategory.name : "Select Category"}
@@ -238,14 +244,14 @@ export default function AddTransactionScreen() {
               />
             </TouchableOpacity>
             {errors.category ? (
-              <Text style={styles.errorText}>{errors.category}</Text>
+              <Text style={[styles.errorText, { color: Colors.error }]}>{errors.category}</Text>
             ) : null}
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Date</Text>
+            <Text style={[styles.label, { color: Colors.text }]}>Date</Text>
             <TouchableOpacity
-              style={styles.pickerTrigger}
+              style={[styles.pickerTrigger, { backgroundColor: Colors.inputBg, borderColor: Colors.border }]}
               onPress={() => setShowDatePicker(true)}
             >
               <View style={styles.pickerValue}>
@@ -254,7 +260,7 @@ export default function AddTransactionScreen() {
                   size={20}
                   color={Colors.text}
                 />
-                <Text style={styles.pickerText}>{formatDate(date)}</Text>
+                <Text style={[styles.pickerText, { color: Colors.text }]}>{formatDate(date)}</Text>
               </View>
               <Ionicons
                 name="chevron-forward"
@@ -285,7 +291,7 @@ export default function AddTransactionScreen() {
       </KeyboardAwareScrollView>
 
       <View
-        style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 20) }]}
+        style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 20), borderTopColor: Colors.border, backgroundColor: Colors.background }]}
       >
         <Button
           title="Save Transaction"
@@ -299,10 +305,10 @@ export default function AddTransactionScreen() {
       {Platform.OS === "ios" && (
         <Modal visible={showDatePicker} transparent animationType="slide">
           <View style={styles.modalOverlay}>
-            <View style={styles.datePickerContainer}>
-              <View style={styles.datePickerHeader}>
+            <View style={[styles.datePickerContainer, { backgroundColor: Colors.cardSecondary }]}>
+              <View style={[styles.datePickerHeader, { borderBottomColor: Colors.border }]}>
                 <TouchableOpacity onPress={() => setShowDatePicker(false)}>
-                  <Text style={styles.datePickerCancel}>Cancel</Text>
+                  <Text style={[styles.datePickerCancel, { color: Colors.textSecondary }]}>Cancel</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => setShowDatePicker(false)}>
                   <Text style={styles.datePickerDone}>Done</Text>
@@ -314,7 +320,7 @@ export default function AddTransactionScreen() {
                   mode="date"
                   display="spinner"
                   onChange={onDateChange}
-                  style={styles.iosDatePicker}
+                  style={[styles.iosDatePicker, { backgroundColor: Colors.cardSecondary }]}
                   textColor={Colors.text}
                 />
               </View>
@@ -329,7 +335,6 @@ export default function AddTransactionScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   header: {
     flexDirection: "row",
@@ -338,7 +343,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 20,
     borderBottomWidth: 1,
-    borderBottomColor: "#1A1A1A",
   },
   closeButton: {
     padding: 4,
@@ -347,7 +351,6 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: Colors.text,
   },
   container: {
     flex: 1,
@@ -383,7 +386,6 @@ const styles = StyleSheet.create({
   currencySymbol: {
     fontSize: 32,
     fontWeight: "bold",
-    color: Colors.textSecondary,
     marginRight: 8,
     ...Platform.select({
       android: { includeFontPadding: false },
@@ -393,7 +395,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 40,
     fontWeight: "bold",
-    color: Colors.text,
     minHeight: 56,
     paddingHorizontal: 0,
     borderWidth: 0,
@@ -407,7 +408,6 @@ const styles = StyleSheet.create({
     }),
   },
   amountErrorText: {
-    color: Colors.error,
     fontSize: 14,
     marginTop: 8,
   },
@@ -417,22 +417,16 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: "500",
-    color: Colors.text,
     marginBottom: 8,
   },
   pickerTrigger: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: Colors.inputBg,
     borderWidth: 1,
-    borderColor: Colors.border,
     borderRadius: 12,
     height: 56,
     paddingHorizontal: 16,
-  },
-  pickerTriggerError: {
-    borderColor: Colors.error,
   },
   pickerValue: {
     flexDirection: "row",
@@ -440,14 +434,9 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   pickerText: {
-    color: Colors.text,
     fontSize: 16,
   },
-  pickerTextPlaceholder: {
-    color: Colors.textSecondary,
-  },
   errorText: {
-    color: Colors.error,
     fontSize: 12,
     marginTop: 6,
   },
@@ -462,8 +451,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 20,
     borderTopWidth: 1,
-    borderTopColor: "#1A1A1A",
-    backgroundColor: Colors.background,
   },
   modalOverlay: {
     flex: 1,
@@ -471,7 +458,6 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.5)",
   },
   datePickerContainer: {
-    backgroundColor: "#1A1A1A",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     paddingBottom: 20,
@@ -483,10 +469,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#2A2A2A",
   },
   datePickerCancel: {
-    color: Colors.textSecondary,
     fontSize: 16,
   },
   datePickerDone: {
@@ -498,6 +482,5 @@ const styles = StyleSheet.create({
     height: 200,
     width: "100%",
     alignSelf: "center",
-    backgroundColor: "#1A1A1A",
   },
 });

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, StatusBar, Platform, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Colors } from '@/constants/colors';
+import { useThemeColor } from '@/hooks/useThemeColor';
+import { useThemeStore } from '@/store/theme-store';
 import { AtmIcon } from '@/components/ui/icons';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { useAuthStore } from '@/store/auth-store';
@@ -33,6 +33,8 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const [period, setPeriod] = useState<ExpensePeriod>('weekly');
   const { transactions, isHydrated } = useTransactionsStore();
+  const Colors = useThemeColor();
+  const { activeTheme } = useThemeStore();
 
   const comparisonLabel = period === 'weekly' ? 'last week' : 'last month';
 
@@ -45,23 +47,18 @@ export default function HomeScreen() {
   const recentTransactions = getTransactionsForRange(transactions, currentPeriodRange);
 
   return (
-    <View style={[styles.safeArea, { paddingTop: insets.top + (Platform.OS === 'android' ? 10 : 0) }]}>
-      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
+    <View style={[styles.safeArea, { paddingTop: insets.top + (Platform.OS === 'android' ? 10 : 0), backgroundColor: Colors.background }]}>
+      <StatusBar barStyle={activeTheme === 'dark' ? 'light-content' : 'dark-content'} backgroundColor="transparent" translucent />
       <AppHeader />
 
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.greetingContainer}>
-          <Text style={styles.greetingText}>Hey, {userName}</Text>
-          <Text style={styles.subGreetingText}>Add your yesterday&apos;s expense</Text>
+          <Text style={[styles.greetingText, { color: Colors.text }]}>Hey, {userName}</Text>
+          <Text style={[styles.subGreetingText, { color: Colors.textSecondary }]}>Add your yesterday&apos;s expense</Text>
         </View>
 
         
-        <LinearGradient
-          colors={['#F6D2B3', '#3FB9A2']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.card}
-        >
+        <View style={[styles.card, { backgroundColor: Colors.primary }]}>
           <View style={styles.cardHeader}>
             <Text style={styles.bankName}>ADRBank</Text>
             <AtmIcon size={24} />
@@ -79,25 +76,21 @@ export default function HomeScreen() {
               <Text style={styles.cardValue}>10/28</Text>
             </View>
           </View>
-        </LinearGradient>
+        </View>
 
         
-        <Text style={styles.summarySectionTitle}>Monthly summary</Text>
-        <LinearGradient
-          colors={['rgba(63, 185, 162, 0.35)', 'rgba(246, 210, 179, 0.12)']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.remainingCard}
-        >
+        <Text style={[styles.summarySectionTitle, { color: Colors.textSecondary }]}>Monthly summary</Text>
+        <View style={[styles.remainingCard, { backgroundColor: activeTheme === 'dark' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(5, 150, 105, 0.1)' }]}>
           <View style={styles.remainingCardInner}>
-            <View style={[styles.summaryIcon, { backgroundColor: 'rgba(255, 255, 255, 0.12)' }]}>
-              <Ionicons name="wallet-outline" size={18} color="#FAFAFA" />
+            <View style={[styles.summaryIcon, { backgroundColor: activeTheme === 'dark' ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.05)' }]}>
+              <Ionicons name="wallet-outline" size={18} color={Colors.primary} />
             </View>
             <View style={styles.remainingTextBlock}>
-              <Text style={styles.remainingLabel}>Remaining balance</Text>
+              <Text style={[styles.remainingLabel, { color: Colors.text, opacity: 0.7 }]}>Remaining balance</Text>
               <Text
                 style={[
                   styles.remainingValue,
+                  { color: Colors.text },
                   remainingBalance < 0 && styles.remainingValueNegative,
                 ]}
               >
@@ -105,30 +98,30 @@ export default function HomeScreen() {
               </Text>
             </View>
           </View>
-        </LinearGradient>
+        </View>
 
         <View style={styles.summaryContainer}>
-          <View style={styles.summaryCard}>
-            <View style={[styles.summaryIcon, { backgroundColor: 'rgba(16, 185, 129, 0.1)' }]}>
-              <Ionicons name="arrow-down" size={16} color="#10B981" />
+          <View style={[styles.summaryCard, { backgroundColor: Colors.cardSecondary }]}>
+            <View style={[styles.summaryIcon, { backgroundColor: activeTheme === 'dark' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(5, 150, 105, 0.1)' }]}>
+              <Ionicons name="arrow-down" size={16} color={Colors.success} />
             </View>
             <View>
-              <Text style={styles.summaryLabel}>Total income</Text>
-              <Text style={styles.summaryValue}>{formatCurrency(totalIncome)}</Text>
+              <Text style={[styles.summaryLabel, { color: Colors.textSecondary }]}>Total income</Text>
+              <Text style={[styles.summaryValue, { color: Colors.text }]}>{formatCurrency(totalIncome)}</Text>
             </View>
           </View>
-          <View style={styles.summaryCard}>
+          <View style={[styles.summaryCard, { backgroundColor: Colors.cardSecondary }]}>
             <View style={[styles.summaryIcon, { backgroundColor: 'rgba(231, 76, 60, 0.1)' }]}>
               <Ionicons name="arrow-up" size={16} color="#E74C3C" />
             </View>
             <View>
-              <Text style={styles.summaryLabel}>Total expenses</Text>
-              <Text style={styles.summaryValue}>{formatCurrency(totalExpenses)}</Text>
+              <Text style={[styles.summaryLabel, { color: Colors.textSecondary }]}>Total expenses</Text>
+              <Text style={[styles.summaryValue, { color: Colors.text }]}>{formatCurrency(totalExpenses)}</Text>
             </View>
           </View>
         </View>
 
-        <Text style={styles.sectionTitle}>Recent transactions</Text>
+        <Text style={[styles.sectionTitle, { color: Colors.text }]}>Recent transactions</Text>
 
         
         <SegmentedControl
@@ -150,7 +143,7 @@ export default function HomeScreen() {
           />
         ) : (
           recentTransactions.map((transaction) => (
-            <TouchableOpacity key={transaction.id} style={styles.transactionItem} activeOpacity={0.7}>
+            <TouchableOpacity key={transaction.id} style={[styles.transactionItem, { backgroundColor: Colors.cardSecondary }]} activeOpacity={0.7}>
               <View style={styles.transactionLeft}>
                 <View style={[styles.categoryIconContainer, { backgroundColor: `${transaction.category.color}20` }]}>
                   <Ionicons 
@@ -160,8 +153,8 @@ export default function HomeScreen() {
                   />
                 </View>
                 <View style={styles.transactionDetails}>
-                  <Text style={styles.transactionName}>{transaction.category.name}</Text>
-                  <Text style={styles.transactionSubtext}>
+                  <Text style={[styles.transactionName, { color: Colors.text }]}>{transaction.category.name}</Text>
+                  <Text style={[styles.transactionSubtext, { color: Colors.textSecondary }]}>
                     {new Date(transaction.date).toLocaleDateString('en-US', { 
                       month: 'short', 
                       day: 'numeric',
@@ -200,7 +193,6 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   container: {
     paddingHorizontal: 20,
@@ -212,12 +204,10 @@ const styles = StyleSheet.create({
   greetingText: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: Colors.text,
     marginBottom: 4,
   },
   subGreetingText: {
     fontSize: 14,
-    color: Colors.textSecondary,
   },
   card: {
     borderRadius: 16,
@@ -259,7 +249,6 @@ const styles = StyleSheet.create({
   summarySectionTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: Colors.textSecondary,
     marginBottom: 12,
     letterSpacing: 0.3,
     textTransform: 'uppercase',
@@ -273,7 +262,6 @@ const styles = StyleSheet.create({
   summaryCard: {
     flex: 1,
     minWidth: 0,
-    backgroundColor: '#1E1E1E',
     borderRadius: 16,
     padding: 16,
     flexDirection: 'column',
@@ -288,13 +276,11 @@ const styles = StyleSheet.create({
   },
   summaryLabel: {
     fontSize: 12,
-    color: Colors.textSecondary,
     marginBottom: 4,
   },
   summaryValue: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: Colors.text,
     ...Platform.select({
       android: { includeFontPadding: false },
     }),
@@ -316,25 +302,22 @@ const styles = StyleSheet.create({
   },
   remainingLabel: {
     fontSize: 12,
-    color: 'rgba(250, 250, 250, 0.85)',
     marginBottom: 4,
   },
   remainingValue: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#FAFAFA',
     letterSpacing: 0.3,
     ...Platform.select({
       android: { includeFontPadding: false },
     }),
   },
   remainingValueNegative: {
-    color: '#FECACA',
+    color: '#EF4444',
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: Colors.text,
     marginBottom: 16,
   },
   segmentedControl: {
@@ -344,7 +327,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#1E1E1E',
     borderRadius: 16,
     padding: 16,
     marginBottom: 12,
@@ -369,12 +351,10 @@ const styles = StyleSheet.create({
   transactionName: {
     fontSize: 16,
     fontWeight: '600',
-    color: Colors.text,
     marginBottom: 4,
   },
   transactionSubtext: {
     fontSize: 12,
-    color: Colors.textSecondary,
   },
   amountBadge: {
     flexShrink: 0,

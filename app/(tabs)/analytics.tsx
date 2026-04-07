@@ -1,7 +1,8 @@
 import { AppHeader } from "@/components/layout/AppHeader";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SegmentedControl } from "@/components/ui/segmented-control";
-import { Colors } from "@/constants/colors";
+import { useThemeColor } from "@/hooks/useThemeColor";
+import { useThemeStore } from "@/store/theme-store";
 import {
     getCalendarMonthRange,
     sumExpensesForRange,
@@ -25,6 +26,8 @@ type ChartPeriod = "week" | "month";
 
 export default function BalancesScreen() {
   const insets = useSafeAreaInsets();
+  const Colors = useThemeColor();
+  const { activeTheme } = useThemeStore();
   const { transactions } = useTransactionsStore();
   const [period, setPeriod] = useState<ChartPeriod>("week");
 
@@ -164,11 +167,11 @@ export default function BalancesScreen() {
     <View
       style={[
         styles.safeArea,
-        { paddingTop: insets.top + (Platform.OS === "android" ? 10 : 0) },
+        { paddingTop: insets.top + (Platform.OS === "android" ? 10 : 0), backgroundColor: Colors.background },
       ]}
     >
       <StatusBar
-        barStyle="light-content"
+        barStyle={activeTheme === 'dark' ? 'light-content' : 'dark-content'}
         backgroundColor="transparent"
         translucent
       />
@@ -179,8 +182,8 @@ export default function BalancesScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.titleContainer}>
-          <Text style={styles.titleText}>Analytics</Text>
-          <Text style={styles.subtitleText}>Track your spending patterns</Text>
+          <Text style={[styles.titleText, { color: Colors.text }]}>Analytics</Text>
+          <Text style={[styles.subtitleText, { color: Colors.textSecondary }]}>Track your spending patterns</Text>
         </View>
 
         {hasData ? (
@@ -188,7 +191,7 @@ export default function BalancesScreen() {
             
             <View style={styles.chartSection}>
               <View style={styles.chartHeader}>
-                <Text style={styles.sectionTitle}>Daily Spending</Text>
+                <Text style={[styles.sectionTitle, { color: Colors.text }]}>Daily Spending</Text>
                 <SegmentedControl
                   options={[
                     { label: "7 Days", value: "week" },
@@ -202,23 +205,23 @@ export default function BalancesScreen() {
 
               <View style={styles.chartContainer}>
                 <View style={styles.chartYAxis}>
-                  <Text style={styles.yAxisLabel}>
+                  <Text style={[styles.yAxisLabel, { color: Colors.textSecondary }]}>
                     ${Math.round(maxSpending)}
                   </Text>
-                  <Text style={styles.yAxisLabel}>
+                  <Text style={[styles.yAxisLabel, { color: Colors.textSecondary }]}>
                     ${Math.round(maxSpending * 0.66)}
                   </Text>
-                  <Text style={styles.yAxisLabel}>
+                  <Text style={[styles.yAxisLabel, { color: Colors.textSecondary }]}>
                     ${Math.round(maxSpending * 0.33)}
                   </Text>
-                  <Text style={styles.yAxisLabel}>$0</Text>
+                  <Text style={[styles.yAxisLabel, { color: Colors.textSecondary }]}>$0</Text>
                 </View>
                 <View style={styles.chartBars}>
                   <View style={styles.gridLineContainer}>
-                    <View style={[styles.gridLine, { top: "0%" }]} />
-                    <View style={[styles.gridLine, { top: "33%" }]} />
-                    <View style={[styles.gridLine, { top: "66%" }]} />
-                    <View style={[styles.gridLine, { top: "100%" }]} />
+                    <View style={[styles.gridLine, { top: "0%", borderColor: Colors.border }]} />
+                    <View style={[styles.gridLine, { top: "33%", borderColor: Colors.border }]} />
+                    <View style={[styles.gridLine, { top: "66%", borderColor: Colors.border }]} />
+                    <View style={[styles.gridLine, { top: "100%", borderColor: Colors.border }]} />
                   </View>
 
                   <ScrollView
@@ -251,9 +254,9 @@ export default function BalancesScreen() {
                               />
                             </View>
                           ) : (
-                            <View style={styles.emptyBar} />
+                            <View style={[styles.emptyBar, { backgroundColor: Colors.border }]} />
                           )}
-                          <Text style={styles.xAxisLabel}>{day.label}</Text>
+                          <Text style={[styles.xAxisLabel, { color: Colors.textSecondary }]}>{day.label}</Text>
                         </View>
                       );
                     })}
@@ -265,7 +268,7 @@ export default function BalancesScreen() {
             
             {categoryBreakdown.length > 0 && (
               <View style={styles.categorySection}>
-                <Text style={styles.sectionTitle}>Category Breakdown</Text>
+                <Text style={[styles.sectionTitle, { color: Colors.text }]}>Category Breakdown</Text>
 
                 <View style={styles.pieChartContainer}>
                   <Svg width="260" height="260" viewBox="0 0 260 260">
@@ -288,8 +291,8 @@ export default function BalancesScreen() {
                     </G>
                   </Svg>
                   <View style={styles.pieChartCenter}>
-                    <Text style={styles.pieChartCenterLabel}>TOTAL</Text>
-                    <Text style={styles.pieChartCenterValue}>
+                    <Text style={[styles.pieChartCenterLabel, { color: Colors.textSecondary }]}>TOTAL</Text>
+                    <Text style={[styles.pieChartCenterValue, { color: Colors.text }]}>
                       $
                       {categoryBreakdown
                         .reduce((sum, cat) => sum + cat.amount, 0)
@@ -307,7 +310,7 @@ export default function BalancesScreen() {
                           { backgroundColor: cat.color },
                         ]}
                       />
-                      <Text style={styles.legendName}>{cat.name}</Text>
+                      <Text style={[styles.legendName, { color: Colors.text }]}>{cat.name}</Text>
                     </View>
                   ))}
                 </View>
@@ -332,7 +335,6 @@ export default function BalancesScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   container: {
     paddingHorizontal: 20,
@@ -344,12 +346,10 @@ const styles = StyleSheet.create({
   titleText: {
     fontSize: 24,
     fontWeight: "bold",
-    color: Colors.text,
     marginBottom: 4,
   },
   subtitleText: {
     fontSize: 14,
-    color: Colors.textSecondary,
   },
   chartSection: {
     marginBottom: 32,
@@ -363,7 +363,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: Colors.text,
   },
   periodToggle: {
     width: 160,
@@ -379,7 +378,6 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   yAxisLabel: {
-    color: "#666666",
     fontSize: 10,
     fontWeight: "500",
   },
@@ -398,7 +396,6 @@ const styles = StyleSheet.create({
     right: 0,
     height: 1,
     borderBottomWidth: 1,
-    borderColor: "#2A2A2A",
     borderStyle: "dashed",
   },
   barsScrollView: {
@@ -429,7 +426,6 @@ const styles = StyleSheet.create({
   emptyBar: {
     width: "100%",
     height: 8,
-    backgroundColor: "#262626",
     borderRadius: 4,
     position: "absolute",
     bottom: 0,
@@ -438,7 +434,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: -20,
     fontSize: 10,
-    color: "#666666",
   },
   categorySection: {
     marginBottom: 32,
@@ -456,7 +451,6 @@ const styles = StyleSheet.create({
   },
   pieChartCenterLabel: {
     fontSize: 14,
-    color: Colors.textSecondary,
     marginBottom: 4,
     textTransform: "uppercase",
     letterSpacing: 1,
@@ -464,7 +458,6 @@ const styles = StyleSheet.create({
   pieChartCenterValue: {
     fontSize: 28,
     fontWeight: "bold",
-    color: Colors.text,
   },
   categoryLegend: {
     flexDirection: "row",
@@ -484,7 +477,6 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   legendName: {
-    color: Colors.text,
     fontSize: 14,
     fontWeight: "500",
   },

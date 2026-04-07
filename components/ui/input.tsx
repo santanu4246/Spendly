@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, TextInput, Text, StyleSheet, TouchableOpacity, TextInputProps } from 'react-native';
-import { Colors } from '@/constants/colors';
+import { useThemeColor } from '@/hooks/useThemeColor';
+import { useThemeStore } from '@/store/theme-store';
 import { Ionicons } from '@expo/vector-icons';
 
 interface InputProps extends TextInputProps {
@@ -17,19 +18,22 @@ export const Input: React.FC<InputProps> = ({
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const [showPassword, setShowPassword] = useState(!isPassword);
+  const Colors = useThemeColor();
+  const { activeTheme } = useThemeStore();
 
   return (
     <View style={styles.container}>
-      {label ? <Text style={styles.label}>{label}</Text> : null}
+      {label ? <Text style={[styles.label, { color: Colors.textSecondary }]}>{label}</Text> : null}
       <View 
         style={[
           styles.inputContainer, 
-          isFocused && styles.inputFocused,
-          error && styles.inputError
+          { backgroundColor: Colors.inputBg, borderColor: Colors.border },
+          isFocused && { borderColor: Colors.primary, backgroundColor: activeTheme === 'dark' ? '#1A1A1A' : '#F0FDF4' },
+          error && { borderColor: Colors.error }
         ]}
       >
         <TextInput
-          style={styles.input}
+          style={[styles.input, { color: Colors.text }]}
           placeholderTextColor={Colors.textSecondary}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
@@ -49,7 +53,7 @@ export const Input: React.FC<InputProps> = ({
           </TouchableOpacity>
         )}
       </View>
-      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+      {error ? <Text style={[styles.errorText, { color: Colors.error }]}>{error}</Text> : null}
     </View>
   );
 };
@@ -61,29 +65,18 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '500',
-    color: Colors.text,
     marginBottom: 8,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.inputBg,
     borderWidth: 1,
-    borderColor: Colors.border,
     borderRadius: 12,
     height: 56,
     paddingHorizontal: 16,
   },
-  inputFocused: {
-    borderColor: Colors.primary,
-    backgroundColor: '#1E293B',
-  },
-  inputError: {
-    borderColor: Colors.error,
-  },
   input: {
     flex: 1,
-    color: Colors.text,
     fontSize: 16,
     height: '100%',
   },
@@ -91,7 +84,6 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   errorText: {
-    color: Colors.error,
     fontSize: 12,
     marginTop: 6,
   },

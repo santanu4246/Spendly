@@ -1,21 +1,30 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Platform, Alert, ScrollView } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Platform, Alert, ScrollView, Appearance } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors } from '@/constants/colors';
+import { useThemeColor } from '@/hooks/useThemeColor';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { useAuthStore } from '@/store/auth-store';
+import { useThemeStore, ThemeMode } from '@/store/theme-store';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { LogoutIcon } from '@/components/ui/icons';
-import { LinearGradient } from 'expo-linear-gradient';
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const { user, logout } = useAuthStore();
   const router = useRouter();
+  const Colors = useThemeColor();
+  const { themeMode, setThemeMode, activeTheme, updateSystemTheme } = useThemeStore();
   
   const userName = user?.name || 'User';
   const userInitial = userName.charAt(0).toUpperCase();
+
+  useEffect(() => {
+    const subscription = Appearance.addChangeListener(() => {
+      updateSystemTheme();
+    });
+    return () => subscription.remove();
+  }, []);
 
   const handleLogout = () => {
     Alert.alert(
@@ -46,21 +55,37 @@ export default function ProfileScreen() {
     onPress?: () => void
   ) => (
     <TouchableOpacity 
-      style={[styles.menuItem, !isLast && styles.menuItemBorder]} 
+      style={[styles.menuItem, !isLast && { borderBottomWidth: 1, borderBottomColor: Colors.border }]} 
       onPress={onPress}
       activeOpacity={0.7}
     >
       <View style={styles.menuItemLeft}>
         <Ionicons name={icon} size={20} color={Colors.text} style={styles.menuIcon} />
-        <Text style={styles.menuItemTitle}>{title}</Text>
+        <Text style={[styles.menuItemTitle, { color: Colors.text }]}>{title}</Text>
       </View>
       <Ionicons name="chevron-forward" size={20} color={Colors.textSecondary} />
     </TouchableOpacity>
   );
 
+  const renderThemeOption = (mode: ThemeMode, label: string, icon: keyof typeof Ionicons.glyphMap, isLast: boolean = false) => (
+    <TouchableOpacity 
+      style={[styles.menuItem, !isLast && { borderBottomWidth: 1, borderBottomColor: Colors.border }]} 
+      onPress={() => setThemeMode(mode)}
+      activeOpacity={0.7}
+    >
+      <View style={styles.menuItemLeft}>
+        <Ionicons name={icon} size={20} color={Colors.text} style={styles.menuIcon} />
+        <Text style={[styles.menuItemTitle, { color: Colors.text }]}>{label}</Text>
+      </View>
+      {themeMode === mode && (
+        <Ionicons name="checkmark-circle" size={20} color={Colors.primary} />
+      )}
+    </TouchableOpacity>
+  );
+
   return (
-    <View style={[styles.safeArea, { paddingTop: insets.top + (Platform.OS === 'android' ? 10 : 0) }]}>
-      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
+    <View style={[styles.safeArea, { paddingTop: insets.top + (Platform.OS === 'android' ? 10 : 0), backgroundColor: Colors.background }]}>
+      <StatusBar barStyle={activeTheme === 'dark' ? 'light-content' : 'dark-content'} backgroundColor="transparent" translucent />
       <AppHeader />
 
       <ScrollView 
@@ -69,51 +94,43 @@ export default function ProfileScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Profile Card */}
-        <View style={styles.profileCard}>
+        <View style={[styles.profileCard, { backgroundColor: Colors.card }]}>
           <View style={styles.avatarContainer}>
-            <Text style={styles.avatarText}>{userInitial}</Text>
+            <Text style={[styles.avatarText, { color: Colors.background }]}>{userInitial}</Text>
           </View>
           <View style={styles.profileInfo}>
-            <Text style={styles.profileName}>{userName}</Text>
+            <Text style={[styles.profileName, { color: Colors.text }]}>{userName}</Text>
           </View>
-          <TouchableOpacity style={styles.editButton} activeOpacity={0.7} onPress={() => router.push('/edit-profile')}>
-            <Text style={styles.editButtonText}>Edit</Text>
+          <TouchableOpacity style={[styles.editButton, { backgroundColor: activeTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)' }]} activeOpacity={0.7} onPress={() => router.push('/edit-profile')}>
+            <Text style={[styles.editButtonText, { color: Colors.text }]}>Edit</Text>
             <Ionicons name="chevron-forward" size={14} color={Colors.text} />
           </TouchableOpacity>
         </View>
 
-        {/* Premium Banner */}
-        <LinearGradient
-          colors={['#8B4367', '#5E3A5A']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.premiumBanner}
-        >
-          <View style={styles.premiumIconContainer}>
-            <Text style={styles.premiumIconText}>S</Text>
-          </View>
-          <View style={styles.premiumInfo}>
-            <Text style={styles.premiumTitle}>Spendly Premium</Text>
-            <Text style={styles.premiumSubtitle}>You have full access to Spendly Premium features.</Text>
-          </View>
-        </LinearGradient>
+        {/* Appearance Section */}
+        {renderSectionHeader('APPEARANCE')}
+        <View style={[styles.sectionContainer, { backgroundColor: Colors.card }]}>
+          {renderThemeOption('light', 'Light Mode', 'sunny-outline')}
+          {renderThemeOption('dark', 'Dark Mode', 'moon-outline')}
+          {renderThemeOption('system', 'System Default', 'phone-portrait-outline', true)}
+        </View>
 
         {/* Preferences Section */}
         {renderSectionHeader('PREFERENCES')}
-        <View style={styles.sectionContainer}>
+        <View style={[styles.sectionContainer, { backgroundColor: Colors.card }]}>
           {renderMenuItem('Gentle Reminders', 'leaf-outline', true)}
         </View>
 
         {/* Subscriptions & Billing Section */}
         {renderSectionHeader('SUBSCRIPTIONS & BILLING')}
-        <View style={styles.sectionContainer}>
+        <View style={[styles.sectionContainer, { backgroundColor: Colors.card }]}>
           {renderMenuItem('Subscription', 'card-outline')}
           {renderMenuItem('Billing & Refund Policy', 'receipt-outline', true)}
         </View>
 
         {/* Data & Privacy Section */}
         {renderSectionHeader('DATA & PRIVACY')}
-        <View style={styles.sectionContainer}>
+        <View style={[styles.sectionContainer, { backgroundColor: Colors.card }]}>
           {renderMenuItem('Terms of Service', 'document-text-outline')}
           {renderMenuItem('Privacy Policy', 'shield-checkmark-outline', true)}
         </View>
@@ -133,7 +150,6 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   container: {
     flex: 1,
@@ -145,7 +161,6 @@ const styles = StyleSheet.create({
   profileCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     padding: 20,
     borderRadius: 24,
     marginBottom: 20,
@@ -153,7 +168,7 @@ const styles = StyleSheet.create({
   avatarContainer: {
     width: 56,
     height: 56,
-    backgroundColor: '#3FB9A2',
+    backgroundColor: '#10B981',
     borderRadius: 28,
     justifyContent: 'center',
     alignItems: 'center',
@@ -162,7 +177,6 @@ const styles = StyleSheet.create({
   avatarText: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: Colors.background,
   },
   profileInfo: {
     flex: 1,
@@ -170,66 +184,26 @@ const styles = StyleSheet.create({
   profileName: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: Colors.text,
   },
   editButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
   },
   editButtonText: {
-    color: Colors.text,
     fontSize: 14,
     fontWeight: '600',
     marginRight: 4,
   },
-  premiumBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 20,
-    borderRadius: 24,
-    marginBottom: 32,
-  },
-  premiumIconContainer: {
-    width: 48,
-    height: 48,
-    backgroundColor: '#FAFAFA',
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  premiumIconText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#8B4367',
-  },
-  premiumInfo: {
-    flex: 1,
-  },
-  premiumTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#FAFAFA',
-    marginBottom: 4,
-  },
-  premiumSubtitle: {
-    fontSize: 13,
-    color: 'rgba(250, 250, 250, 0.8)',
-    lineHeight: 18,
-  },
   sectionHeader: {
     fontSize: 12,
     fontWeight: '600',
-    color: Colors.textSecondary,
     marginBottom: 12,
     letterSpacing: 0.5,
   },
   sectionContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderRadius: 20,
     marginBottom: 24,
     overflow: 'hidden',
@@ -239,10 +213,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 16,
-  },
-  menuItemBorder: {
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
   },
   menuItemLeft: {
     flexDirection: 'row',
@@ -254,7 +224,6 @@ const styles = StyleSheet.create({
   menuItemTitle: {
     fontSize: 15,
     fontWeight: '500',
-    color: Colors.text,
   },
   logoutButton: {
     flexDirection: 'row',

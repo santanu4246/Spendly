@@ -1,33 +1,52 @@
 import { ThemeProvider } from "@react-navigation/native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { useEffect } from "react";
+import * as SplashScreen from "expo-splash-screen";
+import { useThemeStore } from "@/store/theme-store";
+import { DarkColors, LightColors } from "@/constants/colors";
 
-const AppDarkTheme = {
-  dark: true,
-  colors: {
-    primary: "#3FB9A2",
-    background: "#0A0A0A",
-    card: "#0A0A0A",
-    text: "#FFFFFF",
-    border: "#27272A",
-    notification: "#3FB9A2",
-  },
-  fonts: {
-    regular: { fontFamily: "System", fontWeight: "400" as const },
-    medium: { fontFamily: "System", fontWeight: "500" as const },
-    bold: { fontFamily: "System", fontWeight: "700" as const },
-    heavy: { fontFamily: "System", fontWeight: "900" as const },
-  },
-};
+SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  const { activeTheme, hydrate } = useThemeStore();
+
+  useEffect(() => {
+    hydrate();
+  }, []);
+
+  const AppTheme = {
+    dark: activeTheme === 'dark',
+    colors: activeTheme === 'dark' ? {
+      primary: DarkColors.primary,
+      background: DarkColors.background,
+      card: DarkColors.card,
+      text: DarkColors.text,
+      border: DarkColors.border,
+      notification: DarkColors.primary,
+    } : {
+      primary: LightColors.primary,
+      background: LightColors.background,
+      card: LightColors.card,
+      text: LightColors.text,
+      border: LightColors.border,
+      notification: LightColors.primary,
+    },
+    fonts: {
+      regular: { fontFamily: "System", fontWeight: "400" as const },
+      medium: { fontFamily: "System", fontWeight: "500" as const },
+      bold: { fontFamily: "System", fontWeight: "700" as const },
+      heavy: { fontFamily: "System", fontWeight: "900" as const },
+    },
+  };
+
   return (
-    <ThemeProvider value={AppDarkTheme}>
-      <StatusBar style="light" />
+    <ThemeProvider value={AppTheme}>
+      <StatusBar style={activeTheme === 'dark' ? 'light' : 'dark'} />
       <Stack
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: "#0A0A0A" },
+          contentStyle: { backgroundColor: activeTheme === 'dark' ? DarkColors.background : LightColors.background },
         }}
       >
         <Stack.Screen name="(auth)" />

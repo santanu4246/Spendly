@@ -1,6 +1,7 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, ViewStyle, TextStyle } from 'react-native';
-import { Colors } from '@/constants/colors';
+import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, ViewStyle, TextStyle, View } from 'react-native';
+import { useThemeColor } from '@/hooks/useThemeColor';
+import { useThemeStore } from '@/store/theme-store';
 
 interface ButtonProps {
   title: string;
@@ -21,21 +22,26 @@ export const Button: React.FC<ButtonProps> = ({
   loading,
   variant = 'primary'
 }) => {
+  const Colors = useThemeColor();
+  const { activeTheme } = useThemeStore();
+  const isLight = activeTheme === 'light';
+  
   const getBackgroundColor = () => {
     if (disabled) return Colors.border;
-    if (variant === 'primary') return Colors.text; // White background like in the image
+    if (variant === 'primary') return isLight ? '#222222' : '#0F766E';
     if (variant === 'secondary') return Colors.card;
     return 'transparent';
   };
 
   const getTextColor = () => {
     if (disabled) return Colors.textSecondary;
-    if (variant === 'primary') return Colors.background; // Black text on white button
-    return Colors.text; // White text otherwise
+    if (variant === 'primary') return '#FFFFFF';
+    return Colors.text;
   };
 
   const getBorder = () => {
     if (variant === 'outline') return { borderWidth: 1, borderColor: Colors.border };
+    if (variant === 'primary') return { borderWidth: 1, borderColor: isLight ? '#000000' : '#10B981' };
     return {};
   };
 
@@ -45,6 +51,7 @@ export const Button: React.FC<ButtonProps> = ({
         styles.button, 
         { backgroundColor: getBackgroundColor() },
         getBorder(),
+        variant === 'primary' && { overflow: 'hidden' },
         style,
         disabled && styles.disabled
       ]} 
@@ -52,6 +59,7 @@ export const Button: React.FC<ButtonProps> = ({
       disabled={disabled || loading}
       activeOpacity={0.8}
     >
+      {variant === 'primary' && !disabled && <View style={styles.innerHighlight} />}
       {loading ? (
         <ActivityIndicator color={getTextColor()} />
       ) : (
@@ -70,7 +78,7 @@ export const Button: React.FC<ButtonProps> = ({
 const styles = StyleSheet.create({
   button: {
     height: 56,
-    borderRadius: 12,
+    borderRadius: 100,
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row',
@@ -82,4 +90,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+  innerHighlight: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 2,
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+  },
 });
+

@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Colors } from "@/constants/colors";
+import { useThemeColor } from "@/hooks/useThemeColor";
+import { useThemeStore } from "@/store/theme-store";
 import { Category, useCategoryStore } from "@/store/category-store";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -8,6 +9,7 @@ import React, { useState } from "react";
 import {
     Platform,
     ScrollView,
+    StatusBar,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -149,6 +151,8 @@ const ICONS: (keyof typeof Ionicons.glyphMap)[] = [
 
 export default function CategoryManagerScreen() {
   const insets = useSafeAreaInsets();
+  const Colors = useThemeColor();
+  const { activeTheme } = useThemeStore();
   const router = useRouter();
   const { setSelectedCategory, transactionType } = useCategoryStore();
 
@@ -206,11 +210,13 @@ export default function CategoryManagerScreen() {
           marginTop: Platform.OS === "ios" ? 44 : 0,
           borderTopLeftRadius: Platform.OS === "ios" ? 24 : 0,
           borderTopRightRadius: Platform.OS === "ios" ? 24 : 0,
-          overflow: "hidden"
+          overflow: "hidden",
+          backgroundColor: Colors.background
         },
       ]}
     >
-      <View style={styles.header}>
+      <StatusBar barStyle={activeTheme === 'dark' ? 'light-content' : 'dark-content'} backgroundColor="transparent" translucent />
+      <View style={[styles.header, { borderBottomColor: Colors.border }]}>
         {view === "create" ? (
           <TouchableOpacity
             onPress={() => setView("list")}
@@ -226,7 +232,7 @@ export default function CategoryManagerScreen() {
             <Ionicons name="close" size={28} color={Colors.text} />
           </TouchableOpacity>
         )}
-        <Text style={styles.headerTitle}>
+        <Text style={[styles.headerTitle, { color: Colors.text }]}>
           {view === "list" ? "Categories" : "New Category"}
         </Text>
         <View style={{ width: 28 }} />
@@ -234,8 +240,8 @@ export default function CategoryManagerScreen() {
 
       {view === "list" ? (
         <View style={styles.container}>
-          <View style={styles.typeIndicator}>
-            <Text style={styles.typeIndicatorText}>
+          <View style={[styles.typeIndicator, { backgroundColor: Colors.cardSecondary }]}>
+            <Text style={[styles.typeIndicatorText, { color: Colors.textSecondary }]}>
               {transactionType === "income"
                 ? "Income Categories"
                 : "Expense Categories"}
@@ -243,7 +249,7 @@ export default function CategoryManagerScreen() {
           </View>
           <ScrollView contentContainerStyle={styles.listContent}>
             {allCategories.map((cat) => (
-              <View key={cat.id} style={styles.categoryRow}>
+              <View key={cat.id} style={[styles.categoryRow, { backgroundColor: Colors.card }]}>
                 <TouchableOpacity
                   style={styles.categoryTouchable}
                   onPress={() => handleSelectCategory(cat)}
@@ -257,7 +263,7 @@ export default function CategoryManagerScreen() {
                   >
                     <Ionicons name={cat.icon} size={24} color={cat.color} />
                   </View>
-                  <Text style={styles.categoryName}>{cat.name}</Text>
+                  <Text style={[styles.categoryName, { color: Colors.text }]}>{cat.name}</Text>
                 </TouchableOpacity>
 
                 {cat.isCustom && (
@@ -279,7 +285,7 @@ export default function CategoryManagerScreen() {
           <View
             style={[
               styles.footer,
-              { paddingBottom: Math.max(insets.bottom, 20) },
+              { paddingBottom: Math.max(insets.bottom, 20), borderTopColor: Colors.border, backgroundColor: Colors.background },
             ]}
           >
             <Button
@@ -303,7 +309,7 @@ export default function CategoryManagerScreen() {
             autoFocus
           />
 
-          <Text style={styles.sectionLabel}>Color</Text>
+          <Text style={[styles.sectionLabel, { color: Colors.text }]}>Color</Text>
           <View style={styles.gridContainer}>
             {COLORS.map((c) => (
               <TouchableOpacity
@@ -311,7 +317,7 @@ export default function CategoryManagerScreen() {
                 style={[
                   styles.colorOption,
                   { backgroundColor: c },
-                  selectedColor === c && styles.selectedOption,
+                  selectedColor === c && { borderWidth: 2, borderColor: Colors.text },
                 ]}
                 onPress={() => setSelectedColor(c)}
               >
@@ -322,14 +328,15 @@ export default function CategoryManagerScreen() {
             ))}
           </View>
 
-          <Text style={styles.sectionLabel}>Icon</Text>
+          <Text style={[styles.sectionLabel, { color: Colors.text }]}>Icon</Text>
           <View style={styles.gridContainer}>
             {ICONS.map((icon) => (
               <TouchableOpacity
                 key={icon}
                 style={[
                   styles.iconOption,
-                  selectedIcon === icon && styles.selectedOption,
+                  { backgroundColor: Colors.card },
+                  selectedIcon === icon && { borderWidth: 2, borderColor: Colors.text },
                 ]}
                 onPress={() => setSelectedIcon(icon)}
               >
@@ -359,7 +366,6 @@ export default function CategoryManagerScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   header: {
     flexDirection: "row",
@@ -368,7 +374,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 20,
     borderBottomWidth: 1,
-    borderBottomColor: "#1A1A1A",
   },
   closeButton: {
     padding: 4,
@@ -377,17 +382,14 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: Colors.text,
   },
   typeIndicator: {
     paddingHorizontal: 20,
     paddingVertical: 12,
-    backgroundColor: "#1A1A1A",
   },
   typeIndicatorText: {
     fontSize: 14,
     fontWeight: "600",
-    color: Colors.textSecondary,
     textTransform: "uppercase",
     letterSpacing: 0.5,
   },
@@ -401,7 +403,6 @@ const styles = StyleSheet.create({
   categoryRow: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: Colors.card,
     borderRadius: 16,
     paddingRight: 16,
   },
@@ -422,7 +423,6 @@ const styles = StyleSheet.create({
   categoryName: {
     fontSize: 16,
     fontWeight: "500",
-    color: Colors.text,
   },
   deleteButton: {
     padding: 8,
@@ -431,8 +431,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 20,
     borderTopWidth: 1,
-    borderTopColor: "#1A1A1A",
-    backgroundColor: Colors.background,
   },
   createContent: {
     padding: 20,
@@ -440,7 +438,6 @@ const styles = StyleSheet.create({
   sectionLabel: {
     fontSize: 16,
     fontWeight: "600",
-    color: Colors.text,
     marginTop: 24,
     marginBottom: 12,
   },
@@ -460,12 +457,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: Colors.card,
     justifyContent: "center",
     alignItems: "center",
-  },
-  selectedOption: {
-    borderWidth: 2,
-    borderColor: Colors.text,
   },
 });

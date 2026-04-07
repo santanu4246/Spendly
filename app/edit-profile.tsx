@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Platform, ScrollView, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors } from '@/constants/colors';
+import { useThemeColor } from '@/hooks/useThemeColor';
+import { useThemeStore } from '@/store/theme-store';
 import { useAuthStore } from '@/store/auth-store';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -11,6 +12,8 @@ import { Button } from '@/components/ui/button';
 
 export default function EditProfileScreen() {
   const insets = useSafeAreaInsets();
+  const Colors = useThemeColor();
+  const { activeTheme } = useThemeStore();
   const { user, logout, updateProfile, profileError, clearErrors } = useAuthStore();
   const router = useRouter();
 
@@ -54,16 +57,16 @@ export default function EditProfileScreen() {
     <View
       style={[
         styles.safeArea,
-        { paddingTop: Platform.OS === 'android' ? insets.top : 20 },
+        { paddingTop: Math.max(insets.top, 20), backgroundColor: Colors.background },
       ]}
     >
-      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
+      <StatusBar barStyle={activeTheme === 'dark' ? 'light-content' : 'dark-content'} backgroundColor="transparent" translucent />
 
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="chevron-back" size={24} color={Colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Edit Profile</Text>
+        <Text style={[styles.headerTitle, { color: Colors.text }]}>Edit Profile</Text>
         <View style={{ width: 24 }} />
       </View>
 
@@ -74,11 +77,11 @@ export default function EditProfileScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.avatarSection}>
-          <View style={styles.avatarContainer}>
-            <Text style={styles.avatarText}>{userInitial}</Text>
+          <View style={[styles.avatarContainer, { backgroundColor: Colors.primary }]}>
+            <Text style={[styles.avatarText, { color: Colors.background }]}>{userInitial}</Text>
           </View>
-          <TouchableOpacity style={styles.cameraButton} activeOpacity={0.8}>
-            <CameraIcon color="#333333" size={18} />
+          <TouchableOpacity style={[styles.cameraButton, { backgroundColor: Colors.text, borderColor: Colors.background }]} activeOpacity={0.8}>
+            <CameraIcon color={Colors.background} size={18} />
           </TouchableOpacity>
         </View>
 
@@ -121,7 +124,7 @@ export default function EditProfileScreen() {
       <View
         style={[
           styles.footer,
-          { paddingBottom: Math.max(insets.bottom, 20) },
+          { paddingBottom: Math.max(insets.bottom, 20), backgroundColor: Colors.background },
         ]}
       >
         <View style={styles.buttonsContainer}>
@@ -129,12 +132,12 @@ export default function EditProfileScreen() {
             title="Save Changes"
             onPress={handleSave}
             loading={isUpdating}
-            style={styles.saveButton}
-            textStyle={styles.saveButtonText}
+            style={[styles.saveButton, { backgroundColor: Colors.primary }] as any}
+            textStyle={[styles.saveButtonText, { color: Colors.background }] as any}
           />
 
           <TouchableOpacity
-            style={styles.deleteButton}
+            style={[styles.deleteButton, { backgroundColor: Colors.error }]}
             onPress={handleDeleteAccount}
             activeOpacity={0.8}
           >
@@ -150,7 +153,6 @@ export default function EditProfileScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -166,7 +168,6 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: Colors.text,
   },
   scroll: {
     flex: 1,
@@ -179,7 +180,6 @@ const styles = StyleSheet.create({
   footer: {
     paddingHorizontal: 20,
     paddingTop: 16,
-    backgroundColor: Colors.background,
   },
   errorBanner: {
     backgroundColor: 'rgba(231, 76, 60, 0.12)',
@@ -204,7 +204,6 @@ const styles = StyleSheet.create({
   avatarContainer: {
     width: 100,
     height: 100,
-    backgroundColor: '#3FB9A2',
     borderRadius: 50,
     justifyContent: 'center',
     alignItems: 'center',
@@ -217,7 +216,6 @@ const styles = StyleSheet.create({
   avatarText: {
     fontSize: 40,
     fontWeight: 'bold',
-    color: Colors.background,
   },
   cameraButton: {
     position: 'absolute',
@@ -225,12 +223,10 @@ const styles = StyleSheet.create({
     right: 0,
     width: 36,
     height: 36,
-    backgroundColor: '#FFFFFF',
     borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 3,
-    borderColor: Colors.background,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
@@ -248,20 +244,17 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   saveButton: {
-    backgroundColor: '#34D399',
     height: 56,
     borderRadius: 28,
   },
   saveButtonText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#FFFFFF',
   },
   deleteButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#EF4444',
     height: 56,
     borderRadius: 28,
   },

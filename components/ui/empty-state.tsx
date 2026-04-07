@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, ViewStyle } from 'react-native';
-import { Colors } from '@/constants/colors';
+import { useThemeColor } from '@/hooks/useThemeColor';
 import { Ionicons } from '@expo/vector-icons';
 import { Button } from './button';
 
@@ -21,13 +21,15 @@ export function EmptyState({
   onAction,
   style
 }: EmptyStateProps) {
+  const Colors = useThemeColor();
+  
   return (
-    <View style={[styles.container, style]}>
-      <View style={styles.iconContainer}>
+    <View style={[styles.container, { backgroundColor: Colors.card, borderColor: Colors.border }, style]}>
+      <View style={[styles.iconContainer, { backgroundColor: Colors.cardSecondary }]}>
         <Ionicons name={icon} size={48} color={Colors.textSecondary} />
       </View>
-      <Text style={styles.title}>{title}</Text>
-      <Text style={styles.description}>{description}</Text>
+      <Text style={[styles.title, { color: Colors.text }]}>{title}</Text>
+      <Text style={[styles.description, { color: Colors.textSecondary }]}>{description}</Text>
       
       {actionLabel && onAction && (
         <Button 
@@ -46,16 +48,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 32,
-    backgroundColor: Colors.card,
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.03)',
   },
   iconContainer: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#1E1E1E',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 24,
@@ -63,13 +62,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: '700',
-    color: Colors.text,
     marginBottom: 8,
     textAlign: 'center',
   },
   description: {
     fontSize: 14,
-    color: Colors.textSecondary,
     textAlign: 'center',
     marginBottom: 24,
     lineHeight: 20,

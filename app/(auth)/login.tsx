@@ -8,8 +8,10 @@ import {
   StatusBar
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors } from '@/constants/colors';
+import { useThemeColor } from '@/hooks/useThemeColor';
+import { useThemeStore } from '@/store/theme-store';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/auth-store';
@@ -22,6 +24,8 @@ export default function LoginScreen() {
   const [isLogin, setIsLogin] = useState(mode !== 'signup');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const Colors = useThemeColor();
+  const { activeTheme } = useThemeStore();
   
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -128,12 +132,25 @@ export default function LoginScreen() {
 
   const currentError = isLogin ? loginError : signupError;
 
+  const isLight = activeTheme === 'light';
+
+  const gradientColors = isLight
+    ? (['#E0FDD2', '#FFFFFF', '#FFFFFF'] as const)
+    : (['#0B2E1F', '#0A0A0A', '#0A0A0A'] as const);
+  const gradientLocations = [0, 0.4, 1] as const;
+
   return (
-    <View style={[styles.safeArea, { 
-      paddingTop: insets.top + (Platform.OS === 'android' ? 10 : 0),
-      paddingBottom: insets.bottom 
-    }]}>
-      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
+    <LinearGradient
+      colors={[...gradientColors]}
+      locations={[...gradientLocations]}
+      start={{ x: 0.5, y: 0 }}
+      end={{ x: 0.5, y: 1 }}
+      style={[styles.safeArea, { 
+        paddingTop: insets.top + (Platform.OS === 'android' ? 10 : 0),
+        paddingBottom: insets.bottom
+      }]}
+    >
+      <StatusBar barStyle={isLight ? 'dark-content' : 'light-content'} backgroundColor="transparent" translucent />
       <KeyboardAwareScrollView 
         style={styles.container} 
         contentContainerStyle={styles.scrollContent}
@@ -144,14 +161,11 @@ export default function LoginScreen() {
       >
           
           <View style={styles.header}>
-            <View style={styles.logoRow}>
-              <View style={styles.logoIcon}>
-                <Text style={styles.logoIconText}>S</Text>
-              </View>
-              <Text style={styles.logoText}>Spendly</Text>
-            </View>
-            <Text style={styles.title}>
-              {isLogin ? 'Sign in to continue' : 'Sign up to continue'}
+            <Text style={[styles.title, { color: Colors.text }]}>
+              {isLogin ? 'Welcome Back' : 'Sign Up'}
+            </Text>
+            <Text style={[styles.subtitle, { color: Colors.textSecondary }]}>
+              {isLogin ? 'Sign in to continue' : 'Create account to continue'}
             </Text>
           </View>
 
@@ -200,7 +214,7 @@ export default function LoginScreen() {
                   accessibilityRole="link"
                   accessibilityLabel="Forgot password"
                 >
-                  <Text style={styles.forgotPasswordText}>Forgot password?</Text>
+                  <Text style={[styles.forgotPasswordText, { color: isLight ? '#007725' : Colors.primaryLight }]}>Forgot password?</Text>
                 </TouchableOpacity>
               </Link>
             )}
@@ -223,34 +237,34 @@ export default function LoginScreen() {
                 color={agreeTerms ? Colors.primary : Colors.error} 
                 style={styles.checkboxIcon}
               />
-              <Text style={styles.termsText}>
-                I agree to the <Text style={styles.termsLink}>Terms & Conditions and Privacy Policy.</Text>
+              <Text style={[styles.termsText, { color: Colors.textSecondary }]}>
+                I agree to the <Text style={[styles.termsLink, { color: Colors.text }]}>Terms & Conditions and Privacy Policy.</Text>
               </Text>
             </TouchableOpacity>
-            {errors.terms ? <Text style={styles.errorText}>{errors.terms}</Text> : null}
+            {errors.terms ? <Text style={[styles.errorText, { color: Colors.error }]}>{errors.terms}</Text> : null}
 
             <View style={styles.dividerContainer}>
-              <View style={styles.divider} />
-              <Text style={styles.dividerText}>or continue with</Text>
-              <View style={styles.divider} />
+              <View style={[styles.divider, { backgroundColor: Colors.border }]} />
+              <Text style={[styles.dividerText, { color: Colors.textSecondary }]}>or continue with</Text>
+              <View style={[styles.divider, { backgroundColor: Colors.border }]} />
             </View>
 
-            <TouchableOpacity style={styles.socialButton} activeOpacity={0.8}>
+            <TouchableOpacity style={[styles.socialButton, { backgroundColor: Colors.card, borderColor: Colors.border }]} activeOpacity={0.8}>
               <GoogleIcon size={20} />
-              <Text style={styles.socialButtonText}>Continue with Google</Text>
+              <Text style={[styles.socialButtonText, { color: Colors.text }]}>Continue with Google</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.socialButton} activeOpacity={0.8}>
+            <TouchableOpacity style={[styles.socialButton, { backgroundColor: Colors.card, borderColor: Colors.border }]} activeOpacity={0.8}>
               <Ionicons name="logo-apple" size={20} color={Colors.text} />
-              <Text style={styles.socialButtonText}>Continue with Apple</Text>
+              <Text style={[styles.socialButtonText, { color: Colors.text }]}>Continue with Apple</Text>
             </TouchableOpacity>
 
             <View style={styles.switchModeContainer}>
-              <Text style={styles.switchModeText}>
+              <Text style={[styles.switchModeText, { color: Colors.textSecondary }]}>
                 {isLogin ? "New here? " : "Already have an account? "}
               </Text>
               <TouchableOpacity onPress={toggleMode}>
-                <Text style={styles.switchModeLink}>
+                <Text style={[styles.switchModeLink, { color: isLight ? '#007725' : Colors.primaryLight }]}>
                   {isLogin ? "Sign Up" : "Sign in"}
                 </Text>
               </TouchableOpacity>
@@ -258,24 +272,23 @@ export default function LoginScreen() {
 
             <View style={styles.footer}>
               <TouchableOpacity>
-                <Text style={styles.footerLink}>Disclaimer</Text>
+                <Text style={[styles.footerLink, { color: Colors.text }]}>Disclaimer</Text>
               </TouchableOpacity>
-              <Text style={styles.footerDot}> • </Text>
+              <Text style={[styles.footerDot, { color: Colors.text }]}> • </Text>
               <TouchableOpacity>
-                <Text style={styles.footerLink}>Terms & Conditions</Text>
+                <Text style={[styles.footerLink, { color: Colors.text }]}>Terms & Conditions</Text>
               </TouchableOpacity>
             </View>
 
           </View>
       </KeyboardAwareScrollView>
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   container: {
     flex: 1,
@@ -287,39 +300,17 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
-    marginBottom: 24,
-    marginTop: 0,
-  },
-  logoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  logoIcon: {
-    width: 32,
-    height: 32,
-    backgroundColor: Colors.primary,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 8,
-  },
-  logoIconText: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#000',
-  },
-  logoText: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: Colors.text,
+    marginTop: 20,
+    marginBottom: 40,
   },
   title: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#E0E0E0',
+    fontSize: 28,
+    fontWeight: '900',
     marginBottom: 8,
-    letterSpacing: 0.5,
+  },
+  subtitle: {
+    fontSize: 16,
+    fontWeight: '500',
   },
   errorBanner: {
     backgroundColor: 'rgba(231, 76, 60, 0.1)',
@@ -345,13 +336,11 @@ const styles = StyleSheet.create({
   },
   forgotPasswordText: {
     fontSize: 14,
-    color: Colors.text,
     fontWeight: '600',
     textDecorationLine: 'underline',
   },
   actionButton: {
     marginBottom: 24,
-    borderRadius: 28,
   },
   termsContainer: {
     flexDirection: 'row',
@@ -365,16 +354,13 @@ const styles = StyleSheet.create({
   termsText: {
     flex: 1,
     fontSize: 13,
-    color: Colors.textSecondary,
     lineHeight: 18,
   },
   termsLink: {
-    color: Colors.text,
     fontWeight: '600',
     textDecorationLine: 'underline',
   },
   errorText: {
-    color: Colors.error,
     fontSize: 12,
     marginTop: -4,
     marginBottom: 16,
@@ -388,10 +374,8 @@ const styles = StyleSheet.create({
   divider: {
     flex: 1,
     height: 1,
-    backgroundColor: Colors.border,
   },
   dividerText: {
-    color: Colors.textSecondary,
     paddingHorizontal: 16,
     fontSize: 14,
   },
@@ -399,15 +383,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: Colors.card,
     height: 56,
     borderRadius: 28,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: Colors.border,
   },
   socialButtonText: {
-    color: Colors.text,
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 12,
@@ -420,11 +401,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   switchModeText: {
-    color: Colors.textSecondary,
     fontSize: 15,
   },
   switchModeLink: {
-    color: Colors.primaryLight,
     fontSize: 15,
     fontWeight: '600',
     textDecorationLine: 'underline',
@@ -437,13 +416,11 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   footerLink: {
-    color: Colors.text,
     fontSize: 13,
     fontWeight: '500',
     textDecorationLine: 'underline',
   },
   footerDot: {
-    color: Colors.text,
     fontSize: 13,
     marginHorizontal: 8,
   },

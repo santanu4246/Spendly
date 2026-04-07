@@ -1,5 +1,5 @@
-import { BalancesIcon, HomeIcon, ProfileIcon } from "@/components/ui/icons";
-import { Colors } from "@/constants/colors";
+import { BalancesIcon, HomeIcon } from "@/components/ui/icons";
+import { useThemeColor } from "@/hooks/useThemeColor";
 import { useAuthStore } from "@/store/auth-store";
 import { useTransactionsStore } from "@/store/transactions-store";
 import { Tabs, useRouter } from "expo-router";
@@ -7,12 +7,19 @@ import React, { useEffect } from "react";
 import { Platform, View, TouchableOpacity, StyleSheet, Text } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
+import { Ionicons } from "@expo/vector-icons";
 
 function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
+  const Colors = useThemeColor();
   
   return (
-    <View style={[styles.tabBarContainer, { bottom: Platform.OS === "ios" ? Math.max(insets.bottom, 24) : 24 }]}>
+    <View style={[styles.tabBarContainer, { 
+      bottom: Platform.OS === "ios" ? Math.max(insets.bottom, 12) : 12,
+      backgroundColor: Colors.tabBarBg,
+      borderColor: Colors.border,
+      shadowColor: Colors.text,
+    }]}>
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
         const label = options.title !== undefined ? options.title : route.name;
@@ -36,7 +43,7 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
           <TouchableOpacity
             key={route.key}
             onPress={onPress}
-            style={[styles.tabItem, isFocused && styles.tabItemActive]}
+            style={[styles.tabItem, isFocused && { backgroundColor: Colors.tabBarActive }]}
             activeOpacity={0.8}
           >
             <View style={styles.iconContainer}>
@@ -56,6 +63,7 @@ export default function TabLayout() {
   const router = useRouter();
   const { user, isAuthenticated, isHydrated } = useAuthStore();
   const { hydrate, clear } = useTransactionsStore();
+  const Colors = useThemeColor();
 
   // Auth guard — redirect to login whenever unauthenticated
   useEffect(() => {
@@ -102,9 +110,9 @@ export default function TabLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: "Profile",
+          title: "Settings",
           tabBarIcon: ({ color, size }) => (
-            <ProfileIcon color={color} size={size} />
+            <Ionicons name="settings-outline" size={size} color={color} />
           ),
         }}
       />
@@ -118,16 +126,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#1A1A1C', // Deep sleek card color
-    marginHorizontal: 16, // Decreased margin to increase width
+    marginHorizontal: 16,
     paddingHorizontal: 16,
-    paddingVertical: 6, // Decreased padding to reduce height
-    borderRadius: 36, // Fully rounded floating bar
+    paddingVertical: 6,
+    borderRadius: 36,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.03)', // Very subtle highlight
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.5,
+    shadowOpacity: 0.15,
     shadowRadius: 20,
     elevation: 10,
     left: 0,
@@ -137,12 +142,9 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 6, // Decreased padding
-    paddingHorizontal: 28, // Slightly wider pill
-    borderRadius: 24, // Creates the pill shape for the active tab
-  },
-  tabItemActive: {
-    backgroundColor: '#2A2A2D', // Subtle grey pill for the active tab (highly professional)
+    paddingVertical: 6,
+    paddingHorizontal: 28,
+    borderRadius: 24,
   },
   iconContainer: {
     marginBottom: 4,

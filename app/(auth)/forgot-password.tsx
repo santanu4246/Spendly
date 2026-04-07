@@ -7,9 +7,11 @@ import {
   TouchableOpacity,
   StatusBar
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors } from '@/constants/colors';
+import { useThemeColor } from '@/hooks/useThemeColor';
+import { useThemeStore } from '@/store/theme-store';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { AccountsStore } from '@/store/accounts-store';
@@ -21,6 +23,8 @@ type Step = 'verify' | 'reset';
 export default function ForgotPasswordScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const Colors = useThemeColor();
+  const { activeTheme } = useThemeStore();
   
   const [step, setStep] = useState<Step>('verify');
   const [loading, setLoading] = useState(false);
@@ -136,12 +140,25 @@ export default function ForgotPasswordScreen() {
     }
   };
 
+  const isLight = activeTheme === 'light';
+
+  const gradientColors = isLight
+    ? (['#E0FDD2', '#FFFFFF', '#FFFFFF'] as const)
+    : (['#0B2E1F', '#0A0A0A', '#0A0A0A'] as const);
+  const gradientLocations = [0, 0.4, 1] as const;
+
   return (
-    <View style={[styles.safeArea, { 
-      paddingTop: insets.top + (Platform.OS === 'android' ? 10 : 0),
-      paddingBottom: insets.bottom 
-    }]}>
-      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
+    <LinearGradient
+      colors={[...gradientColors]}
+      locations={[...gradientLocations]}
+      start={{ x: 0.5, y: 0 }}
+      end={{ x: 0.5, y: 1 }}
+      style={[styles.safeArea, { 
+        paddingTop: insets.top + (Platform.OS === 'android' ? 10 : 0),
+        paddingBottom: insets.bottom 
+      }]}
+    >
+      <StatusBar barStyle={isLight ? 'dark-content' : 'light-content'} backgroundColor="transparent" translucent />
       
       {/* Top Header Row with Back Button */}
       <View style={styles.topHeader}>
@@ -163,14 +180,8 @@ export default function ForgotPasswordScreen() {
         extraScrollHeight={Platform.OS === 'ios' ? 20 : 40}
       >
         <View style={styles.header}>
-          <View style={styles.logoRow}>
-            <View style={styles.logoIcon}>
-              <Text style={styles.logoIconText}>S</Text>
-            </View>
-            <Text style={styles.logoText}>Spendly</Text>
-          </View>
-          <Text style={styles.title}>Reset Password</Text>
-          <Text style={styles.subtitle}>
+          <Text style={[styles.title, { color: Colors.text }]}>Reset Password</Text>
+          <Text style={[styles.subtitle, { color: Colors.textSecondary }]}>
             {step === 'verify' 
               ? 'Verify your identity to reset password' 
               : 'Enter your new password'}
@@ -192,11 +203,19 @@ export default function ForgotPasswordScreen() {
 
         {/* Step Indicator */}
         <View style={styles.stepIndicator}>
-          <View style={[styles.stepDot, step === 'verify' && styles.stepDotActive]} />
-          <View style={styles.stepLine} />
-          <View style={[styles.stepDot, step === 'reset' && styles.stepDotActive]} />
+          <View style={[
+            styles.stepDot, 
+            { backgroundColor: Colors.card, borderColor: Colors.border },
+            step === 'verify' && { backgroundColor: Colors.primary, borderColor: Colors.primary, width: 12, height: 12, borderRadius: 6 }
+          ]} />
+          <View style={[styles.stepLine, { backgroundColor: Colors.border }]} />
+          <View style={[
+            styles.stepDot, 
+            { backgroundColor: Colors.card, borderColor: Colors.border },
+            step === 'reset' && { backgroundColor: Colors.primary, borderColor: Colors.primary, width: 12, height: 12, borderRadius: 6 }
+          ]} />
         </View>
-        <Text style={styles.stepLabel}>
+        <Text style={[styles.stepLabel, { color: Colors.textSecondary }]}>
           Step {step === 'verify' ? '1' : '2'} of 2
         </Text>
 
@@ -261,20 +280,19 @@ export default function ForgotPasswordScreen() {
                 onPress={() => setStep('verify')}
                 activeOpacity={0.8}
               >
-                <Text style={styles.backToVerifyText}>Back to verification</Text>
+                <Text style={[styles.backToVerifyText, { color: Colors.text }]}>Back to verification</Text>
               </TouchableOpacity>
             </>
           )}
         </View>
       </KeyboardAwareScrollView>
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   topHeader: {
     paddingHorizontal: 24,
@@ -297,45 +315,18 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
-    marginBottom: 32,
-    marginTop: 0,
-  },
-  logoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  logoIcon: {
-    width: 32,
-    height: 32,
-    backgroundColor: Colors.primary,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 8,
-  },
-  logoIconText: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#000',
-  },
-  logoText: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: Colors.text,
+    marginTop: 20,
+    marginBottom: 40,
   },
   title: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#E0E0E0',
+    fontSize: 28,
+    fontWeight: '900',
     marginBottom: 8,
-    letterSpacing: 0.5,
   },
   subtitle: {
-    fontSize: 15,
-    color: Colors.textSecondary,
+    fontSize: 16,
+    fontWeight: '500',
     textAlign: 'center',
-    lineHeight: 22,
   },
   successBanner: {
     flexDirection: 'row',
@@ -378,26 +369,15 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: Colors.card,
     borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  stepDotActive: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
-    width: 12,
-    height: 12,
-    borderRadius: 6,
   },
   stepLine: {
     width: 40,
     height: 2,
-    backgroundColor: Colors.border,
     marginHorizontal: 8,
   },
   stepLabel: {
     fontSize: 13,
-    color: Colors.textSecondary,
     textAlign: 'center',
     marginBottom: 32,
     fontWeight: '500',
@@ -407,7 +387,6 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     marginTop: 16,
-    borderRadius: 28,
   },
   backToVerifyButton: {
     marginTop: 24,
@@ -416,7 +395,6 @@ const styles = StyleSheet.create({
   },
   backToVerifyText: {
     fontSize: 14,
-    color: Colors.text,
     fontWeight: '600',
     textDecorationLine: 'underline',
   },
