@@ -48,6 +48,7 @@ export const Button: React.FC<ButtonProps> = ({
   };
 
   const getBorder = () => {
+    if (disabled) return { borderWidth: 0 };
     if (variant === "outline")
       return { borderWidth: 1, borderColor: Colors.border };
     if (variant === "primary")

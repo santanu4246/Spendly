@@ -342,7 +342,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingBottom: 20,
-    borderBottomWidth: 1,
+    borderBottomWidth: 0,
   },
   closeButton: {
     padding: 4,
@@ -450,7 +450,7 @@ const styles = StyleSheet.create({
   footer: {
     paddingHorizontal: 20,
     paddingTop: 20,
-    borderTopWidth: 1,
+    borderTopWidth: 0,
   },
   modalOverlay: {
     flex: 1,
