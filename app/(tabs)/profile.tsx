@@ -1,7 +1,7 @@
 import {
-  AppearanceIcon,
-  LogoutIcon,
-  NotificationIcon,
+    AppearanceIcon,
+    LogoutIcon,
+    NotificationIcon,
 } from "@/components/ui/icons";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { useAuthStore } from "@/store/auth-store";
@@ -10,15 +10,15 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect } from "react";
 import {
-  Alert,
-  Appearance,
-  Platform,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Alert,
+    Appearance,
+    Platform,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 

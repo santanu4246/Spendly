@@ -46,6 +46,7 @@ export default function HomeScreen() {
   const userName = user?.name?.split(" ")[0] || "Alex";
   const insets = useSafeAreaInsets();
   const [period, setPeriod] = useState<ExpensePeriod>("weekly");
+  const [visibleCount, setVisibleCount] = useState(3);
   const { transactions, isHydrated } = useTransactionsStore();
   const Colors = useThemeColor();
   const { activeTheme } = useThemeStore();
@@ -63,6 +64,17 @@ export default function HomeScreen() {
   );
 
   const isLight = activeTheme === "light";
+
+  const displayedTransactions = recentTransactions.slice(0, visibleCount);
+  const hasMore = recentTransactions.length > visibleCount;
+
+  const handleViewMore = () => {
+    setVisibleCount((prev) => prev + 3);
+  };
+
+  React.useEffect(() => {
+    setVisibleCount(3);
+  }, [period]);
 
   const screenGradientColors = isLight
     ? (["#E0FDD2", "#FFFFFF", "#FFFFFF"] as const)
@@ -248,15 +260,41 @@ export default function HomeScreen() {
               </Text>
             </View>
           ) : (
-            recentTransactions.map((transaction) => (
-              <SwipeableTransaction
-                key={transaction.id}
-                transaction={transaction}
-              />
-            ))
+            <>
+              {displayedTransactions.map((transaction) => (
+                <SwipeableTransaction
+                  key={transaction.id}
+                  transaction={transaction}
+                />
+              ))}
+              {hasMore && (
+                <TouchableOpacity
+                  style={[
+                    styles.viewMoreButton,
+                    {
+                      backgroundColor: Colors.card,
+                      borderColor: Colors.border,
+                    },
+                  ]}
+                  onPress={handleViewMore}
+                  activeOpacity={0.7}
+                >
+                  <Text
+                    style={[styles.viewMoreText, { color: Colors.primary }]}
+                  >
+                    View More
+                  </Text>
+                  <Ionicons
+                    name="chevron-down"
+                    size={18}
+                    color={Colors.primary}
+                  />
+                </TouchableOpacity>
+              )}
+            </>
           )}
 
-          <View style={{ height: 100 }} />
+          <View style={{ height: 120 }} />
         </ScrollView>
       </LinearGradient>
     </GestureHandlerRootView>
@@ -481,5 +519,23 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: "center",
     lineHeight: 20,
+  },
+  viewMoreButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    marginTop: 12,
+    marginBottom: 0,
+    borderWidth: 1,
+    alignSelf: "center",
+    maxWidth: 140,
+  },
+  viewMoreText: {
+    fontSize: 13,
+    fontWeight: "600",
+    marginRight: 4,
   },
 });

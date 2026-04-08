@@ -11,7 +11,8 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "backgroundColor": "#0A0A0A"
+      "backgroundColor": "#0A0A0A",
+      "bundleIdentifier": "com.santanudutta.spendly"
     },
     "android": {
       "adaptiveIcon": {
