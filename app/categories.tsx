@@ -288,11 +288,17 @@ export default function CategoryManagerScreen() {
               { paddingBottom: Math.max(insets.bottom, 20), borderTopColor: Colors.border, backgroundColor: Colors.background },
             ]}
           >
-            <Button
-              title="Add Custom Category"
+            <TouchableOpacity
+              style={[
+                styles.addButton,
+                { backgroundColor: '#34A853' },
+              ]}
               onPress={() => setView("create")}
-              variant="secondary"
-            />
+              activeOpacity={0.8}
+            >
+              <Ionicons name="add-circle-outline" size={20} color="#FFFFFF" />
+              <Text style={styles.addButtonText}>Add Custom Category</Text>
+            </TouchableOpacity>
           </View>
         </View>
       ) : (
@@ -459,5 +465,23 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     justifyContent: "center",
     alignItems: "center",
+  },
+  addButton: {
+    height: 56,
+    borderRadius: 100,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  addButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });

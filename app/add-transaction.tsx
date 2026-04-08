@@ -5,13 +5,13 @@ import { useThemeColor } from "@/hooks/useThemeColor";
 import { useThemeStore } from "@/store/theme-store";
 import { useAuthStore } from "@/store/auth-store";
 import { useCategoryStore } from "@/store/category-store";
-import { useTransactionsStore } from "@/store/transactions-store";
+import { useTransactionsStore, getCalendarMonthRange, getRemainingBalance } from "@/store/transactions-store";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker, {
     DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
     Modal,
     Platform,
@@ -33,9 +33,9 @@ export default function AddTransactionScreen() {
   const { activeTheme } = useThemeStore();
   const router = useRouter();
   const { user } = useAuthStore();
-  const { addTransaction } = useTransactionsStore();
+  const { addTransaction, transactions } = useTransactionsStore();
 
-  const [type, setType] = useState<TransactionType>("expense");
+  const [type, setType] = useState<TransactionType>("income");
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
   const { selectedCategory, setSelectedCategory, setTransactionType } =
@@ -45,6 +45,11 @@ export default function AddTransactionScreen() {
   const [loading, setLoading] = useState(false);
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  useEffect(() => {
+    setTransactionType(type);
+    setSelectedCategory(null);
+  }, []);
 
   const handleTypeChange = (newType: TransactionType) => {
     setType(newType);
@@ -81,6 +86,12 @@ export default function AddTransactionScreen() {
         newErrors.amount = "Amount must be a number";
       } else if (parsedAmount <= 0) {
         newErrors.amount = "Amount must be greater than 0";
+      } else if (type === "expense") {
+        const currentMonthRange = getCalendarMonthRange();
+        const currentBalance = getRemainingBalance(transactions, currentMonthRange);
+        if (parsedAmount > currentBalance) {
+          newErrors.amount = `Insufficient balance. Available: $${currentBalance.toFixed(2)}`;
+        }
       }
     }
 
@@ -165,8 +176,8 @@ export default function AddTransactionScreen() {
       >
         <SegmentedControl
           options={[
-            { label: "Expense", value: "expense" },
             { label: "Income", value: "income" },
+            { label: "Expense", value: "expense" },
           ]}
           selectedValue={type}
           onValueChange={handleTypeChange}

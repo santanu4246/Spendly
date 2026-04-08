@@ -46,6 +46,7 @@ export default function HomeScreen() {
   const userName = user?.name?.split(" ")[0] || "Alex";
   const insets = useSafeAreaInsets();
   const [period, setPeriod] = useState<ExpensePeriod>("weekly");
+  const [transactionType, setTransactionType] = useState<'all' | 'income' | 'expense'>('all');
   const [visibleCount, setVisibleCount] = useState(3);
   const { transactions, isHydrated } = useTransactionsStore();
   const Colors = useThemeColor();
@@ -63,10 +64,15 @@ export default function HomeScreen() {
     currentPeriodRange,
   );
 
+  const filteredTransactions = recentTransactions.filter(t => {
+    if (transactionType === 'all') return true;
+    return t.type === transactionType;
+  });
+
   const isLight = activeTheme === "light";
 
-  const displayedTransactions = recentTransactions.slice(0, visibleCount);
-  const hasMore = recentTransactions.length > visibleCount;
+  const displayedTransactions = filteredTransactions.slice(0, visibleCount);
+  const hasMore = filteredTransactions.length > visibleCount;
 
   const handleViewMore = () => {
     setVisibleCount((prev) => prev + 3);
@@ -74,7 +80,7 @@ export default function HomeScreen() {
 
   React.useEffect(() => {
     setVisibleCount(3);
-  }, [period]);
+  }, [period, transactionType]);
 
   const screenGradientColors = isLight
     ? (["#E0FDD2", "#FFFFFF", "#FFFFFF"] as const)
@@ -212,7 +218,7 @@ export default function HomeScreen() {
               accessibilityLabel="Add Transaction"
               activeOpacity={0.7}
             >
-              <Ionicons name="add-circle" size={28} color={Colors.primary} />
+              <Ionicons name="add-circle" size={32} color={Colors.primary} />
             </TouchableOpacity>
           </View>
 
@@ -226,7 +232,18 @@ export default function HomeScreen() {
             style={styles.segmentedControl}
           />
 
-          {recentTransactions.length === 0 ? (
+          <SegmentedControl
+            options={[
+              { label: "All", value: "all" },
+              { label: "Income", value: "income" },
+              { label: "Expense", value: "expense" },
+            ]}
+            selectedValue={transactionType}
+            onValueChange={setTransactionType}
+            style={styles.typeSegmentedControl}
+          />
+
+          {filteredTransactions.length === 0 ? (
             <View style={styles.emptyStateContainer}>
               <View
                 style={[
@@ -254,9 +271,13 @@ export default function HomeScreen() {
                   { color: Colors.textSecondary },
                 ]}
               >
-                {period === "weekly"
-                  ? "Your recent transactions for this week will appear here."
-                  : "Your recent transactions for this month will appear here."}
+                {transactionType === 'all' 
+                  ? (period === "weekly"
+                    ? "Your recent transactions for this week will appear here."
+                    : "Your recent transactions for this month will appear here.")
+                  : (period === "weekly"
+                    ? `Your ${transactionType} transactions for this week will appear here.`
+                    : `Your ${transactionType} transactions for this month will appear here.`)}
               </Text>
             </View>
           ) : (
@@ -491,6 +512,9 @@ const styles = StyleSheet.create({
     letterSpacing: 0.2,
   },
   segmentedControl: {
+    marginBottom: 20,
+  },
+  typeSegmentedControl: {
     marginBottom: 20,
   },
   emptyStateContainer: {

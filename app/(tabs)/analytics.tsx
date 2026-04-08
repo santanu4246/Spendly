@@ -1,26 +1,30 @@
 import { EmptyState } from "@/components/ui/empty-state";
 import { NotificationIcon } from "@/components/ui/icons";
+import { SegmentedControl } from "@/components/ui/segmented-control";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { useThemeStore } from "@/store/theme-store";
 import {
-  getCalendarMonthRange,
-  sumExpensesForRange,
-  sumIncomeForRange,
-  useTransactionsStore,
+    getCalendarMonthRange,
+    sumExpensesForRange,
+    sumIncomeForRange,
+    useTransactionsStore,
 } from "@/store/transactions-store";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  Platform,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Dimensions,
+    Platform,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
-import { BarChart, PieChart, LineChart } from "react-native-gifted-charts";
+import { LineChart, PieChart } from "react-native-gifted-charts";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 export default function BalancesScreen() {
   const router = useRouter();
@@ -29,67 +33,73 @@ export default function BalancesScreen() {
   const { activeTheme } = useThemeStore();
   const { transactions } = useTransactionsStore();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [categoryType, setCategoryType] = useState<"income" | "expense">(
+    "income",
+  );
 
   const currentMonthRange = getCalendarMonthRange();
   const monthExpenses = sumExpensesForRange(transactions, currentMonthRange);
   const monthIncome = sumIncomeForRange(transactions, currentMonthRange);
 
-  const getMonthlySpending = () => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth();
-    const currentDay = now.getDate();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
+  useEffect(() => {
+    setSelectedCategory(null);
+  }, [categoryType]);
 
-    const weeklyData = [];
-    // 4 weeks only — last week absorbs remaining days
-    const weekRanges = [
-      [1, 7],
-      [8, 14],
-      [15, 21],
-      [22, daysInMonth],
-    ];
+  const getChartData = () => {
+    const today = new Date();
+    const chartData = [];
 
-    for (let w = 0; w < weekRanges.length; w++) {
-      const [start, end] = weekRanges[w];
+    const windowStart = new Date(today);
+    windowStart.setDate(today.getDate() - 6);
+    windowStart.setHours(0, 0, 0, 0);
 
-      // Stop at the current week — don't plot future weeks
-      if (start > currentDay) break;
+    let cumulativeBalance = transactions
+      .filter((t) => new Date(t.date) < windowStart)
+      .reduce(
+        (sum, t) => sum + (t.type === "income" ? t.amount : -t.amount),
+        0,
+      );
 
-      let weekTotal = 0;
-      for (let day = start; day <= Math.min(end, currentDay); day++) {
-        const date = new Date(year, month, day);
-        date.setHours(0, 0, 0, 0);
-        const nextDate = new Date(date);
-        nextDate.setDate(date.getDate() + 1);
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(today.getDate() - i);
+      date.setHours(0, 0, 0, 0);
 
-        const dayExpenses = transactions.filter((t) => {
-          const tDate = new Date(t.date);
-          return t.type === "expense" && tDate >= date && tDate < nextDate;
-        });
+      const nextDate = new Date(date);
+      nextDate.setDate(date.getDate() + 1);
 
-        weekTotal += dayExpenses.reduce((sum, t) => sum + t.amount, 0);
-      }
+      const dayTransactions = transactions.filter((t) => {
+        const tDate = new Date(t.date);
+        return tDate >= date && tDate < nextDate;
+      });
 
-      weeklyData.push({
-        value: weekTotal,
-        label: `Week ${w + 1}`,
+      dayTransactions.forEach((t) => {
+        if (t.type === "income") {
+          cumulativeBalance += t.amount;
+        } else {
+          cumulativeBalance -= t.amount;
+        }
+      });
+
+      const dayNames = ["S", "M", "T", "W", "T", "F", "S"];
+
+      chartData.push({
+        value: cumulativeBalance,
+        label: dayNames[date.getDay()],
       });
     }
 
-    return weeklyData;
+    return chartData;
   };
 
-  const getCategoryBreakdown = () => {
-    const expenseTransactions = transactions.filter(
-      (t) => t.type === "expense",
-    );
+  const getCategoryBreakdown = (type: "income" | "expense") => {
+    const filteredTransactions = transactions.filter((t) => t.type === type);
     const categoryTotals = new Map<
       string,
       { name: string; amount: number; color: string; icon: string }
     >();
 
-    expenseTransactions.forEach((t) => {
+    filteredTransactions.forEach((t) => {
       const existing = categoryTotals.get(t.category.id) || {
         name: t.category.name,
         amount: 0,
@@ -100,7 +110,7 @@ export default function BalancesScreen() {
       categoryTotals.set(t.category.id, existing);
     });
 
-    const totalExpenses = Array.from(categoryTotals.values()).reduce(
+    const totalAmount = Array.from(categoryTotals.values()).reduce(
       (sum, cat) => sum + cat.amount,
       0,
     );
@@ -110,18 +120,39 @@ export default function BalancesScreen() {
         id,
         ...data,
         percentage:
-          totalExpenses > 0
-            ? Math.round((data.amount / totalExpenses) * 100)
-            : 0,
+          totalAmount > 0 ? Math.round((data.amount / totalAmount) * 100) : 0,
       }))
       .sort((a, b) => b.amount - a.amount)
       .slice(0, 5);
   };
 
-  const monthlySpending = getMonthlySpending();
-  const categoryBreakdown = getCategoryBreakdown();
-  const maxSpending = Math.max(...monthlySpending.map((d) => d.value), 1);
+  const chartData = getChartData();
+  const categoryBreakdown = getCategoryBreakdown(categoryType);
   const hasData = transactions.length > 0;
+
+  const values = chartData.map((d) => d.value);
+  const maxValue = Math.max(...values);
+  const minValue = Math.min(...values);
+
+  const range = maxValue - minValue;
+  const padding = Math.max(range * 0.2, 50);
+
+  const chartMaxValue = maxValue + padding;
+  const chartMinValue = minValue - padding;
+
+  // Format dates for header
+  const endDate = new Date();
+  const startDate = new Date();
+  startDate.setDate(endDate.getDate() - 6);
+
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString("en-US", { day: "numeric", month: "short" });
+  };
+  const dateRangeStr = `${formatDate(startDate)} - ${formatDate(endDate)}`;
+
+  const chartColor = Colors.primary;
+  const chartFillStartColor = Colors.primary;
+  const chartFillEndColor = Colors.background;
 
   const generatePieChart = () => {
     if (categoryBreakdown.length === 0) return [];
@@ -168,7 +199,7 @@ export default function BalancesScreen() {
             <Text
               style={[styles.subtitleText, { color: Colors.textSecondary }]}
             >
-              Track your spending patterns
+              Track your financial patterns
             </Text>
           </View>
           <View style={styles.headerActions}>
@@ -188,69 +219,111 @@ export default function BalancesScreen() {
         {hasData ? (
           <>
             <View style={styles.chartSection}>
-              <View style={styles.chartHeader}>
-                <Text style={[styles.sectionTitle, { color: Colors.text }]}>
-                  Monthly Spending
+              <View style={styles.chartHeaderCentered}>
+                <Text
+                  style={[styles.sectionTitleCentered, { color: Colors.text }]}
+                >
+                  Weekly Balance
                 </Text>
-                <Text style={[styles.monthLabel, { color: Colors.textSecondary }]}>
-                  {new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" })}
+                <Text
+                  style={[
+                    styles.dateRangeLabel,
+                    { color: Colors.textSecondary },
+                  ]}
+                >
+                  {dateRangeStr}
                 </Text>
               </View>
 
               <View style={styles.chartContainer}>
                 <LineChart
-                  data={monthlySpending}
-                  height={200}
-                  width={340}
-                  spacing={80}
-                  initialSpacing={30}
-                  endSpacing={30}
-                  color={Colors.primary}
-                  thickness={3}
-                  startFillColor={Colors.primary}
-                  endFillColor={Colors.primary}
-                  startOpacity={0.25}
-                  endOpacity={0.01}
+                  data={chartData}
+                  height={180}
+                  width={SCREEN_WIDTH - 80}
+                  spacing={(SCREEN_WIDTH - 120) / 7}
+                  initialSpacing={10}
+                  endSpacing={10}
+                  color={chartColor}
+                  thickness={2.5}
+                  startFillColor={chartFillStartColor}
+                  endFillColor={chartFillEndColor}
+                  startOpacity={0.4}
+                  endOpacity={0}
                   areaChart
                   curved
+                  hideDataPoints
                   rulesType="solid"
                   rulesColor={Colors.border}
                   rulesThickness={1}
                   xAxisThickness={1}
                   xAxisColor={Colors.border}
-                  yAxisThickness={1}
-                  yAxisColor={Colors.border}
-                  yAxisTextStyle={{ 
-                    color: Colors.textSecondary, 
-                    fontSize: 11,
-                    fontWeight: "500",
-                  }}
-                  yAxisLabelPrefix="$"
-                  xAxisLabelTextStyle={{
+                  yAxisThickness={0}
+                  yAxisTextStyle={{
                     color: Colors.textSecondary,
                     fontSize: 11,
                     fontWeight: "500",
                   }}
+                  yAxisLabelPrefix="$"
                   noOfSections={4}
-                  maxValue={maxSpending > 0 ? Math.ceil(maxSpending * 1.2) : 100}
+                  maxValue={chartMaxValue}
+                  mostNegativeValue={chartMinValue}
+                  showReferenceLine1
+                  referenceLine1Position={0}
+                  referenceLine1Config={{
+                    color: Colors.textSecondary,
+                    thickness: 2,
+                    dashWidth: 4,
+                    dashGap: 4,
+                  }}
+                  xAxisLabelTextStyle={{
+                    color: Colors.textSecondary,
+                    fontSize: 13,
+                    fontWeight: "600",
+                  }}
                   isAnimated
                   animationDuration={800}
-                  dataPointsColor={Colors.primary}
-                  dataPointsRadius={5}
-                  showVerticalLines
-                  verticalLinesColor={Colors.border}
-                  verticalLinesThickness={1}
-                  verticalLinesStrokeDashArray={[4, 4]}
-                  focusEnabled
-                  showStripOnFocus
-                  stripColor={Colors.primary}
-                  stripWidth={2}
-                  stripOpacity={0.5}
-                  showTextOnFocus
-                  unFocusOnPressOut
-                  delayBeforeUnFocus={2000}
-                  focusedDataPointColor={Colors.primary}
-                  focusedDataPointRadius={7}
+                  pointerConfig={{
+                    pointerStripHeight: 140,
+                    pointerStripColor: chartColor,
+                    pointerStripWidth: 1,
+                    pointerColor: chartColor,
+                    radius: 5,
+                    pointerLabelWidth: 80,
+                    pointerLabelHeight: 30,
+                    activatePointersOnLongPress: false,
+                    autoAdjustPointerLabelPosition: true,
+                    pointerLabelComponent: (items: any) => {
+                      return (
+                        <View
+                          style={{
+                            height: 30,
+                            width: 80,
+                            justifyContent: "center",
+                            alignItems: "center",
+                            backgroundColor: Colors.card,
+                            borderRadius: 6,
+                            shadowColor: "#000",
+                            shadowOffset: { width: 0, height: 2 },
+                            shadowOpacity: 0.15,
+                            shadowRadius: 3,
+                            elevation: 3,
+                            borderWidth: 1,
+                            borderColor: Colors.border,
+                          }}
+                        >
+                          <Text
+                            style={{
+                              color: Colors.text,
+                              fontSize: 13,
+                              fontWeight: "bold",
+                            }}
+                          >
+                            ${items[0].value.toFixed(0)}
+                          </Text>
+                        </View>
+                      );
+                    },
+                  }}
                 />
               </View>
             </View>
@@ -260,6 +333,16 @@ export default function BalancesScreen() {
                 <Text style={[styles.sectionTitle, { color: Colors.text }]}>
                   Category Breakdown
                 </Text>
+
+                <SegmentedControl
+                  options={[
+                    { label: "Income", value: "income" },
+                    { label: "Expense", value: "expense" },
+                  ]}
+                  selectedValue={categoryType}
+                  onValueChange={setCategoryType}
+                  style={styles.categorySegmentedControl}
+                />
 
                 <View style={styles.pieChartContainer}>
                   <PieChart
@@ -279,7 +362,9 @@ export default function BalancesScreen() {
                           >
                             {selectedCategoryData
                               ? selectedCategoryData.name.toUpperCase()
-                              : "TOTAL"}
+                              : categoryType === "income"
+                                ? "TOTAL INCOME"
+                                : "TOTAL EXPENSES"}
                           </Text>
                           <Text
                             style={[
@@ -394,6 +479,19 @@ const styles = StyleSheet.create({
   chartSection: {
     marginBottom: 32,
   },
+  chartHeaderCentered: {
+    alignItems: "center",
+    marginBottom: 24,
+  },
+  sectionTitleCentered: {
+    fontSize: 22,
+    fontWeight: "bold",
+    marginBottom: 4,
+  },
+  dateRangeLabel: {
+    fontSize: 14,
+    fontWeight: "500",
+  },
   chartHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -409,8 +507,9 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   chartContainer: {
-    height: 240,
+    height: 220,
     marginBottom: 16,
+    overflow: "hidden",
   },
   chartYAxis: {
     justifyContent: "space-between",
@@ -477,6 +576,10 @@ const styles = StyleSheet.create({
   },
   categorySection: {
     marginBottom: 32,
+  },
+  categorySegmentedControl: {
+    marginTop: 16,
+    marginBottom: 8,
   },
   pieChartContainer: {
     alignItems: "center",

@@ -19,7 +19,7 @@ interface CategoryState {
 
 export const useCategoryStore = create<CategoryState>((set) => ({
   selectedCategory: null,
-  transactionType: 'expense',
+  transactionType: 'income',
   setSelectedCategory: (category) => set({ selectedCategory: category }),
   setTransactionType: (type) => set({ transactionType: type }),
 }));

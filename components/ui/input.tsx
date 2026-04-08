@@ -1,8 +1,15 @@
-import React, { useState } from 'react';
-import { View, TextInput, Text, StyleSheet, TouchableOpacity, TextInputProps } from 'react-native';
-import { useThemeColor } from '@/hooks/useThemeColor';
-import { useThemeStore } from '@/store/theme-store';
-import { Ionicons } from '@expo/vector-icons';
+import { useThemeColor } from "@/hooks/useThemeColor";
+import { useThemeStore } from "@/store/theme-store";
+import { Ionicons } from "@expo/vector-icons";
+import React, { useState } from "react";
+import {
+    StyleSheet,
+    Text,
+    TextInput,
+    TextInputProps,
+    TouchableOpacity,
+    View,
+} from "react-native";
 
 interface InputProps extends TextInputProps {
   label: string;
@@ -10,11 +17,11 @@ interface InputProps extends TextInputProps {
   isPassword?: boolean;
 }
 
-export const Input: React.FC<InputProps> = ({ 
-  label, 
-  error, 
-  isPassword, 
-  ...props 
+export const Input: React.FC<InputProps> = ({
+  label,
+  error,
+  isPassword,
+  ...props
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const [showPassword, setShowPassword] = useState(!isPassword);
@@ -23,13 +30,20 @@ export const Input: React.FC<InputProps> = ({
 
   return (
     <View style={styles.container}>
-      {label ? <Text style={[styles.label, { color: Colors.textSecondary }]}>{label}</Text> : null}
-      <View 
+      {label ? (
+        <Text style={[styles.label, { color: Colors.textSecondary }]}>
+          {label}
+        </Text>
+      ) : null}
+      <View
         style={[
-          styles.inputContainer, 
+          styles.inputContainer,
           { backgroundColor: Colors.inputBg, borderColor: Colors.border },
-          isFocused && { borderColor: Colors.primary, backgroundColor: activeTheme === 'dark' ? '#1A1A1A' : '#F0FDF4' },
-          error && { borderColor: Colors.error }
+          isFocused && {
+            borderColor: Colors.primary,
+            backgroundColor: activeTheme === "dark" ? "#1A1A1A" : "#F0FDF4",
+          },
+          error && { borderColor: Colors.error },
         ]}
       >
         <TextInput
@@ -41,19 +55,21 @@ export const Input: React.FC<InputProps> = ({
           {...props}
         />
         {isPassword && (
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => setShowPassword(!showPassword)}
             style={styles.eyeIcon}
           >
-            <Ionicons 
-              name={showPassword ? "eye-off-outline" : "eye-outline"} 
-              size={20} 
-              color={Colors.textSecondary} 
+            <Ionicons
+              name={showPassword ? "eye-off-outline" : "eye-outline"}
+              size={20}
+              color={Colors.textSecondary}
             />
           </TouchableOpacity>
         )}
       </View>
-      {error ? <Text style={[styles.errorText, { color: Colors.error }]}>{error}</Text> : null}
+      {error ? (
+        <Text style={[styles.errorText, { color: Colors.error }]}>{error}</Text>
+      ) : null}
     </View>
   );
 };
@@ -64,12 +80,12 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
     marginBottom: 8,
   },
   inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     borderWidth: 1,
     borderRadius: 12,
     height: 56,
@@ -78,7 +94,7 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 16,
-    height: '100%',
+    height: "100%",
   },
   eyeIcon: {
     padding: 4,
