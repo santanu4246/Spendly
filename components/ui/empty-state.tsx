@@ -24,9 +24,9 @@ export function EmptyState({
   const Colors = useThemeColor();
   
   return (
-    <View style={[styles.container, { backgroundColor: Colors.card, borderColor: Colors.border }, style]}>
-      <View style={[styles.iconContainer, { backgroundColor: Colors.cardSecondary }]}>
-        <Ionicons name={icon} size={48} color={Colors.textSecondary} />
+    <View style={[styles.container, style]}>
+      <View style={[styles.iconContainer, { backgroundColor: `${Colors.primary}20` }]}>
+        <Ionicons name={icon} size={48} color={Colors.primary} />
       </View>
       <Text style={[styles.title, { color: Colors.text }]}>{title}</Text>
       <Text style={[styles.description, { color: Colors.textSecondary }]}>{description}</Text>
@@ -48,8 +48,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 32,
-    borderRadius: 24,
-    borderWidth: 1,
   },
   iconContainer: {
     width: 80,

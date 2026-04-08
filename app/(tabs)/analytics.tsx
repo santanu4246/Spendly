@@ -328,88 +328,97 @@ export default function BalancesScreen() {
               </View>
             </View>
 
-            {categoryBreakdown.length > 0 && (
-              <View style={styles.categorySection}>
-                <Text style={[styles.sectionTitle, { color: Colors.text }]}>
-                  Category Breakdown
-                </Text>
+            <View style={styles.categorySection}>
+              <Text style={[styles.sectionTitle, { color: Colors.text }]}>
+                Category Breakdown
+              </Text>
 
-                <SegmentedControl
-                  options={[
-                    { label: "Income", value: "income" },
-                    { label: "Expense", value: "expense" },
-                  ]}
-                  selectedValue={categoryType}
-                  onValueChange={setCategoryType}
-                  style={styles.categorySegmentedControl}
+              <SegmentedControl
+                options={[
+                  { label: "Income", value: "income" },
+                  { label: "Expense", value: "expense" },
+                ]}
+                selectedValue={categoryType}
+                onValueChange={setCategoryType}
+                style={styles.categorySegmentedControl}
+              />
+
+              {categoryBreakdown.length > 0 ? (
+                <>
+                  <View style={styles.pieChartContainer}>
+                    <PieChart
+                      data={pieChartData}
+                      donut
+                      radius={120}
+                      innerRadius={70}
+                      innerCircleColor={Colors.background}
+                      centerLabelComponent={() => {
+                        return (
+                          <View style={styles.pieChartCenter}>
+                            <Text
+                              style={[
+                                styles.pieChartCenterLabel,
+                                { color: Colors.textSecondary },
+                              ]}
+                            >
+                              {selectedCategoryData
+                                ? selectedCategoryData.name.toUpperCase()
+                                : categoryType === "income"
+                                  ? "TOTAL INCOME"
+                                  : "TOTAL EXPENSES"}
+                            </Text>
+                            <Text
+                              style={[
+                                styles.pieChartCenterValue,
+                                { color: Colors.text },
+                              ]}
+                            >
+                              $
+                              {selectedCategoryData
+                                ? selectedCategoryData.amount.toFixed(0)
+                                : categoryBreakdown
+                                    .reduce((sum, cat) => sum + cat.amount, 0)
+                                    .toFixed(0)}
+                            </Text>
+                          </View>
+                        );
+                      }}
+                      onPress={(item: any, index: number) => {
+                        if (selectedCategory === categoryBreakdown[index].name) {
+                          setSelectedCategory(null);
+                        } else {
+                          setSelectedCategory(categoryBreakdown[index].name);
+                        }
+                      }}
+                      animationDuration={500}
+                    />
+                  </View>
+
+                  <View style={styles.categoryLegend}>
+                    {categoryBreakdown.map((cat) => (
+                      <View key={cat.id} style={styles.legendItem}>
+                        <View
+                          style={[
+                            styles.legendColor,
+                            { backgroundColor: cat.color },
+                          ]}
+                        />
+                        <Text style={[styles.legendName, { color: Colors.text }]}>
+                          {cat.name}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                </>
+              ) : (
+                <EmptyState
+                  icon="pie-chart-outline"
+                  title={`No ${categoryType === "income" ? "Income" : "Expense"} Data`}
+                  description={`You haven't recorded any ${categoryType} transactions yet. Add some to see your category breakdown.`}
+                  style={styles.categoryEmptyState}
                 />
-
-                <View style={styles.pieChartContainer}>
-                  <PieChart
-                    data={pieChartData}
-                    donut
-                    radius={120}
-                    innerRadius={70}
-                    innerCircleColor={Colors.background}
-                    centerLabelComponent={() => {
-                      return (
-                        <View style={styles.pieChartCenter}>
-                          <Text
-                            style={[
-                              styles.pieChartCenterLabel,
-                              { color: Colors.textSecondary },
-                            ]}
-                          >
-                            {selectedCategoryData
-                              ? selectedCategoryData.name.toUpperCase()
-                              : categoryType === "income"
-                                ? "TOTAL INCOME"
-                                : "TOTAL EXPENSES"}
-                          </Text>
-                          <Text
-                            style={[
-                              styles.pieChartCenterValue,
-                              { color: Colors.text },
-                            ]}
-                          >
-                            $
-                            {selectedCategoryData
-                              ? selectedCategoryData.amount.toFixed(0)
-                              : categoryBreakdown
-                                  .reduce((sum, cat) => sum + cat.amount, 0)
-                                  .toFixed(0)}
-                          </Text>
-                        </View>
-                      );
-                    }}
-                    onPress={(item: any, index: number) => {
-                      if (selectedCategory === categoryBreakdown[index].name) {
-                        setSelectedCategory(null);
-                      } else {
-                        setSelectedCategory(categoryBreakdown[index].name);
-                      }
-                    }}
-                    animationDuration={500}
-                  />
-                </View>
-
-                <View style={styles.categoryLegend}>
-                  {categoryBreakdown.map((cat) => (
-                    <View key={cat.id} style={styles.legendItem}>
-                      <View
-                        style={[
-                          styles.legendColor,
-                          { backgroundColor: cat.color },
-                        ]}
-                      />
-                      <Text style={[styles.legendName, { color: Colors.text }]}>
-                        {cat.name}
-                      </Text>
-                    </View>
-                  ))}
-                </View>
-              </View>
-            )}
+              )}
+            </View>
           </>
         ) : (
           <EmptyState
@@ -625,5 +634,9 @@ const styles = StyleSheet.create({
   emptyState: {
     marginTop: 40,
     marginBottom: 40,
+  },
+  categoryEmptyState: {
+    marginTop: 20,
+    marginBottom: 20,
   },
 });

@@ -28,7 +28,7 @@ yarn-error.*
 bun.lock
 feature.md
 prd.md
-
+eas.json
 # macOS
 .DS_Store
 *.pem
