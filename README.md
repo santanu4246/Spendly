@@ -20,6 +20,68 @@ A modern expense tracking mobile application built with React Native and Expo. T
 - **Balance Validation**: Prevents overspending with insufficient balance alerts
 - **Responsive Design**: Optimized for both iOS and Android platforms
 
+## Screenshots
+
+### iOS
+
+<p align="center">
+  <img src="screenshots/ios/welcome.png" width="200" alt="Welcome Screen" />
+  <img src="screenshots/ios/dashboard.png" width="200" alt="Dashboard" />
+  <img src="screenshots/ios/analytics.png" width="200" alt="Analytics" />
+  <img src="screenshots/ios/profile.png" width="200" alt="Profile" />
+</p>
+
+### Android
+
+#### Light mode
+
+<p align="center">
+  <img src="screenshots/android/imgLight1.jpeg" width="180" alt="Android light 1" />
+  <img src="screenshots/android/imgLight2.jpeg" width="180" alt="Android light 2" />
+  <img src="screenshots/android/imgLight3.jpeg" width="180" alt="Android light 3" />
+  <img src="screenshots/android/imgLight4.jpeg" width="180" alt="Android light 4" />
+</p>
+<p align="center">
+  <img src="screenshots/android/imgLight5.jpeg" width="180" alt="Android light 5" />
+  <img src="screenshots/android/imgLight6.jpeg" width="180" alt="Android light 6" />
+  <img src="screenshots/android/imgLight7.jpeg" width="180" alt="Android light 7" />
+  <img src="screenshots/android/imgLight8.jpeg" width="180" alt="Android light 8" />
+</p>
+<p align="center">
+  <img src="screenshots/android/imgLight9.jpeg" width="180" alt="Android light 9" />
+  <img src="screenshots/android/imgLight10.jpeg" width="180" alt="Android light 10" />
+  <img src="screenshots/android/imgLight11.jpeg" width="180" alt="Android light 11" />
+  <img src="screenshots/android/imgLight12.jpeg" width="180" alt="Android light 12" />
+</p>
+<p align="center">
+  <img src="screenshots/android/imgLight13.jpeg" width="180" alt="Android light 13" />
+</p>
+
+#### Dark mode
+
+<p align="center">
+  <img src="screenshots/android/imgDark1.jpeg" width="180" alt="Android dark 1" />
+  <img src="screenshots/android/imgDark2.jpeg" width="180" alt="Android dark 2" />
+  <img src="screenshots/android/imgDark3.jpeg" width="180" alt="Android dark 3" />
+  <img src="screenshots/android/imgDark4.jpeg" width="180" alt="Android dark 4" />
+</p>
+<p align="center">
+  <img src="screenshots/android/imgDark5.jpeg" width="180" alt="Android dark 5" />
+  <img src="screenshots/android/imgDark6.jpeg" width="180" alt="Android dark 6" />
+  <img src="screenshots/android/imgDark7.jpeg" width="180" alt="Android dark 7" />
+  <img src="screenshots/android/imgDark8.jpeg" width="180" alt="Android dark 8" />
+</p>
+<p align="center">
+  <img src="screenshots/android/imgDark9.jpeg" width="180" alt="Android dark 9" />
+  <img src="screenshots/android/imgDark10.jpeg" width="180" alt="Android dark 10" />
+  <img src="screenshots/android/imgDark11.jpeg" width="180" alt="Android dark 11" />
+  <img src="screenshots/android/imgDark12.jpeg" width="180" alt="Android dark 12" />
+</p>
+<p align="center">
+  <img src="screenshots/android/imgDark13.jpeg" width="180" alt="Android dark 13" />
+  <img src="screenshots/android/imgDark14.jpeg" width="180" alt="Android dark 14" />
+</p>
+
 ## Project Structure
 
 ```
