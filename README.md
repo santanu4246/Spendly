@@ -24,11 +24,52 @@ A modern expense tracking mobile application built with React Native and Expo. T
 
 ### iOS
 
+#### Light mode
+
 <p align="center">
-  <img src="screenshots/ios/welcome.png" width="200" alt="Welcome Screen" />
-  <img src="screenshots/ios/dashboard.png" width="200" alt="Dashboard" />
-  <img src="screenshots/ios/analytics.png" width="200" alt="Analytics" />
-  <img src="screenshots/ios/profile.png" width="200" alt="Profile" />
+  <img src="screenshots/ios/iosLight1.png" width="180" alt="iOS light 1" />
+  <img src="screenshots/ios/iosLight2.png" width="180" alt="iOS light 2" />
+  <img src="screenshots/ios/iosLight3.png" width="180" alt="iOS light 3" />
+  <img src="screenshots/ios/iosLight4.png" width="180" alt="iOS light 4" />
+</p>
+<p align="center">
+  <img src="screenshots/ios/iosLight5.png" width="180" alt="iOS light 5" />
+  <img src="screenshots/ios/iosLight6.png" width="180" alt="iOS light 6" />
+  <img src="screenshots/ios/iosLight7.png" width="180" alt="iOS light 7" />
+  <img src="screenshots/ios/iosLight8.png" width="180" alt="iOS light 8" />
+</p>
+<p align="center">
+  <img src="screenshots/ios/iosLight9.png" width="180" alt="iOS light 9" />
+  <img src="screenshots/ios/iosLight10.png" width="180" alt="iOS light 10" />
+  <img src="screenshots/ios/iosLight11.png" width="180" alt="iOS light 11" />
+  <img src="screenshots/ios/iosLight12.png" width="180" alt="iOS light 12" />
+</p>
+<p align="center">
+  <img src="screenshots/ios/iosLight13.png" width="180" alt="iOS light 13" />
+</p>
+
+#### Dark mode
+
+<p align="center">
+  <img src="screenshots/ios/iosDark1.png" width="180" alt="iOS dark 1" />
+  <img src="screenshots/ios/iosDark2.png" width="180" alt="iOS dark 2" />
+  <img src="screenshots/ios/iosDark3.png" width="180" alt="iOS dark 3" />
+  <img src="screenshots/ios/iosDark4.png" width="180" alt="iOS dark 4" />
+</p>
+<p align="center">
+  <img src="screenshots/ios/iosDark5.png" width="180" alt="iOS dark 5" />
+  <img src="screenshots/ios/iosDark6.png" width="180" alt="iOS dark 6" />
+  <img src="screenshots/ios/iosDark7.png" width="180" alt="iOS dark 7" />
+  <img src="screenshots/ios/iosDark8.png" width="180" alt="iOS dark 8" />
+</p>
+<p align="center">
+  <img src="screenshots/ios/iosDark9.png" width="180" alt="iOS dark 9" />
+  <img src="screenshots/ios/iosDark10.png" width="180" alt="iOS dark 10" />
+  <img src="screenshots/ios/iosDark11.png" width="180" alt="iOS dark 11" />
+  <img src="screenshots/ios/iosDark12.png" width="180" alt="iOS dark 12" />
+</p>
+<p align="center">
+  <img src="screenshots/ios/iosDark13.png" width="180" alt="iOS dark 13" />
 </p>
 
 ### Android
