@@ -12,11 +12,7 @@ export default function RootLayout() {
   const { activeTheme, hydrate } = useThemeStore();
 
   useEffect(() => {
-    const prepare = async () => {
-      await hydrate();
-      await SplashScreen.hideAsync();
-    };
-    prepare();
+    hydrate();
   }, []);
 
   const AppTheme = {
@@ -66,6 +62,7 @@ export default function RootLayout() {
           options={{
             animation: "none",
             gestureEnabled: false,
+            contentStyle: { backgroundColor: "#000000" },
           }}
         />
         <Stack.Screen name="(auth)" />

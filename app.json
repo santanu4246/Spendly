@@ -7,14 +7,15 @@
     "icon": "./assets/logo.png",
     "scheme": "spendly",
     "userInterfaceStyle": "dark",
-    "backgroundColor": "#0A0A0A",
+    "backgroundColor": "#000000",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "backgroundColor": "#0A0A0A",
+      "backgroundColor": "#000000",
       "bundleIdentifier": "com.santanudutta.spendly"
     },
     "android": {
+      "backgroundColor": "#000000",
       "adaptiveIcon": {
         "foregroundImage": "./assets/logo.png",
         "backgroundColor": "#FFFFFF"
@@ -32,12 +33,12 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/logo.png",
-          "imageWidth": 200,
+          "backgroundColor": "#000000",
+          "image": "./assets/transparent.png",
+          "imageWidth": 1,
           "resizeMode": "contain",
-          "backgroundColor": "#0A0A0A",
           "dark": {
-            "backgroundColor": "#0A0A0A"
+            "backgroundColor": "#000000"
           }
         }
       ]

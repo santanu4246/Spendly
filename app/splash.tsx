@@ -1,15 +1,11 @@
+import { DarkColors, LightColors } from "@/constants/colors";
 import { useThemeStore } from "@/store/theme-store";
 import { useFonts } from "expo-font";
 import { useRouter } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import React, { useEffect, useRef } from "react";
-import {
-  Dimensions,
-  Image,
-  Platform,
-  StyleSheet,
-  View,
-} from "react-native";
+import React, { useEffect, useLayoutEffect, useRef } from "react";
+import { Dimensions, Image, Platform, StyleSheet, View } from "react-native";
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -23,27 +19,26 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const LOGO_SIZE = Math.min(196, SCREEN_WIDTH * 0.42);
 const LOGO_RADIUS = 28;
 
-/** Logo + title animate together (same duration & easing) */
 const ENTRANCE_MS = 620;
-/** Hold before welcome */
 const HOLD_MS = 1750;
 
 const easeOut = Easing.out(Easing.cubic);
 
-/** Splash always uses a black canvas; title stays light for contrast */
-const SPLASH_BG = "#000000";
-const SPLASH_TITLE = "#FFFFFF";
+const SPLASH_LOGO = require("../assets/splash.png");
 
 export default function AnimatedSplashScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { activeTheme } = useThemeStore();
-  const isDark = activeTheme === "dark";
+  const { activeTheme, isHydrated } = useThemeStore();
   const didNavigate = useRef(false);
 
   const [fontsLoaded] = useFonts({
     DarkByte: require("../assets/DarkByte.ttf"),
   });
+
+  useLayoutEffect(() => {
+    void SplashScreen.hideAsync();
+  }, []);
 
   const titleScale = useSharedValue(0.58);
   const titleOpacity = useSharedValue(0);
@@ -51,7 +46,7 @@ export default function AnimatedSplashScreen() {
   const logoOpacity = useSharedValue(0);
 
   useEffect(() => {
-    if (!fontsLoaded) return;
+    if (!fontsLoaded || !isHydrated) return;
 
     titleScale.value = withTiming(1, {
       duration: ENTRANCE_MS,
@@ -78,7 +73,7 @@ export default function AnimatedSplashScreen() {
     }, ENTRANCE_MS + HOLD_MS);
 
     return () => clearTimeout(navTimer);
-  }, [fontsLoaded, router]); // eslint-disable-line react-hooks/exhaustive-deps -- shared values stable
+  }, [fontsLoaded, isHydrated, router]); 
 
   const titleAnimatedStyle = useAnimatedStyle(() => ({
     opacity: titleOpacity.value,
@@ -92,16 +87,17 @@ export default function AnimatedSplashScreen() {
 
   const bottomPad = Math.max(insets.bottom, 16) + 36;
 
-  const logoSource = isDark
-    ? require("../assets/logoDark.jpg")
-    : require("../assets/logo.png");
+  const isDark = activeTheme === "dark";
+  const Colors = isDark ? DarkColors : LightColors;
+  const bgColor = isDark ? "#000000" : "#FFFFFF";
+  const textColor = isDark ? "#FFFFFF" : "#000000";
 
-  if (!fontsLoaded) {
+  if (!fontsLoaded || !isHydrated) {
     return (
       <View
         style={[
           styles.root,
-          { backgroundColor: SPLASH_BG, paddingTop: insets.top },
+          { backgroundColor: bgColor, paddingTop: insets.top },
         ]}
       />
     );
@@ -112,18 +108,21 @@ export default function AnimatedSplashScreen() {
       style={[
         styles.root,
         {
-          backgroundColor: SPLASH_BG,
+          backgroundColor: bgColor,
           paddingTop: insets.top + (Platform.OS === "android" ? 8 : 0),
         },
       ]}
     >
-      <StatusBar style="light" backgroundColor="transparent" />
+      <StatusBar
+        style={isDark ? "light" : "dark"}
+        backgroundColor="transparent"
+      />
 
       <View style={styles.content}>
         <View style={styles.logoSection}>
           <Animated.View style={[styles.logoOuter, logoAnimatedStyle]}>
             <Image
-              source={logoSource}
+              source={SPLASH_LOGO}
               style={styles.logoImage}
               resizeMode="contain"
               accessibilityLabel="Spendly logo"
@@ -136,11 +135,13 @@ export default function AnimatedSplashScreen() {
             style={[
               styles.title,
               {
-                color: SPLASH_TITLE,
+                color: textColor,
                 fontFamily: "DarkByte",
-                textShadowColor: "rgba(0,0,0,0.35)",
+                textShadowColor: isDark
+                  ? "rgba(0,0,0,0.35)"
+                  : "rgba(0,0,0,0.06)",
                 textShadowOffset: { width: 0, height: 1 },
-                textShadowRadius: 8,
+                textShadowRadius: isDark ? 8 : 4,
               },
               titleAnimatedStyle,
             ]}
