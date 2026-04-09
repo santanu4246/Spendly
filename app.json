@@ -4,7 +4,7 @@
     "slug": "spendly",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/logo.png",
     "scheme": "spendly",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#0A0A0A",
@@ -16,10 +16,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#0A0A0A",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "foregroundImage": "./assets/logo.png",
+        "backgroundColor": "#FFFFFF"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
@@ -27,14 +25,14 @@
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/logo.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/logo.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#0A0A0A",
